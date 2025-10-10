@@ -4,7 +4,7 @@
 
 Foundry is the public engineering forge for Coded Ventures — where we document our frameworks, share architectural insights, and provide integration guides.
 
-🌐 **Live Site:** [foundry.codedventures.io](https://foundry.codedventures.io)
+🌐 **Live Site:** [foundry.codedventures.com.au](https://foundry.codedventures.com.au)
 
 ---
 
@@ -30,7 +30,7 @@ Foundry is not just documentation — it's our public workshop where we:
 
 ### Prerequisites
 
-- Node.js 18 or higher
+- Node.js 20 or higher (required by Docusaurus 3.9.1)
 - npm
 
 ### Installation

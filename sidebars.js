@@ -34,6 +34,7 @@ const sidebars = {
       label: 'Core Components',
       items: [
         'commercebridge/bridge',
+        'commercebridge/core-bridge',
         'commercebridge/engagement',
         'commercebridge/workers',
       ],

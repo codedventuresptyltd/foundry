@@ -12,7 +12,7 @@ const config = {
   favicon: 'img/logo.svg',
 
   // Set the production url of your site here
-  url: 'https://foundry.codedventures.io',
+  url: 'https://foundry.codedventures.com.au',
   // Set the /<baseUrl>/ pathname under which your site is served
   baseUrl: '/',
 

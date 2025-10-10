@@ -165,51 +165,28 @@ Advanced caching and state management:
 
 ## Core Bridge Functions
 
-The base Bridge provides these foundational functions:
+The base Bridge provides foundational operations that all ecosystems inherit.
 
-### Engagement Management
+[View complete Core Bridge API →](/commercebridge/core-bridge)
+
+Quick examples:
 
 ```typescript
-// Create and manage engagements
+// Engagement management
 await bridge.createEngagement(params);
 await bridge.getEngagement(engagementId);
-await bridge.updateEngagement(engagementId, updates);
-await bridge.finalizeEngagement(engagementId);
-```
 
-### Pricing
-
-```typescript
-// Calculate prices with modifiers
+// Pricing calculations
 await bridge.calculatePrice(product, quantity, context);
-await bridge.applyPriceModifiers(basePrice, modifiers);
-await bridge.getCustomerPricing(customerId, productId);
-```
 
-### Fulfillment
-
-```typescript
-// Allocate inventory and manage fulfillment
+// Fulfillment allocation
 await bridge.allocateInventory(engagementId, lineItems);
-await bridge.checkAvailability(productId, quantity, deliveryZone);
-await bridge.optimizeFulfillment(engagement);
-```
 
-### State Management
-
-```typescript
-// Cache and retrieve state
+// State and caching
 await bridge.cacheEngagement(engagement);
-await bridge.invalidateCache(key);
-await bridge.getFromCache(key);
-```
 
-### Queue Operations
-
-```typescript
-// Publish messages to workers
+// Queue operations
 await bridge.publishToQueue(queueName, message);
-await bridge.consumeFromQueue(queueName, handler);
 ```
 
 ---

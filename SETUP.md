@@ -87,7 +87,7 @@ In your GitHub repository settings, add these secrets:
 **Cloudflare Web Analytics:**
 
 1. Go to Cloudflare dashboard → Web Analytics
-2. Create a site for `foundry.codedventures.io`
+2. Create a site for `foundry.codedventures.com.au`
 3. Copy the token
 4. Update `docusaurus.config.js`:
 
@@ -108,7 +108,7 @@ scripts: [
   {
     src: 'https://plausible.io/js/script.js',
     defer: true,
-    'data-domain': 'foundry.codedventures.io',
+    'data-domain': 'foundry.codedventures.com.au',
   },
 ],
 ```

@@ -63,7 +63,7 @@ Add these secrets to your GitHub repository settings:
 
 ### 3. Custom Domain
 
-- [ ] Add custom domain `foundry.codedventures.io` in Pages settings
+- [ ] Add custom domain `foundry.codedventures.com.au` in Pages settings
 - [ ] Verify DNS configuration
 - [ ] Enable "Always Use HTTPS"
 - [ ] Wait for SSL certificate provisioning
@@ -82,7 +82,7 @@ Add these secrets to your GitHub repository settings:
 ### Option A: Cloudflare Web Analytics
 
 - [ ] Enable Web Analytics in Cloudflare dashboard
-- [ ] Add site: `foundry.codedventures.io`
+- [ ] Add site: `foundry.codedventures.com.au`
 - [ ] Copy the analytics token
 - [ ] Update `docusaurus.config.js`:
   ```javascript
@@ -124,7 +124,7 @@ Add these secrets to your GitHub repository settings:
 
 ### 1. Verification
 
-- [ ] Visit `https://foundry.codedventures.io` and verify it loads
+- [ ] Visit `https://foundry.codedventures.com.au` and verify it loads
 - [ ] Test all navigation links
 - [ ] Check mobile responsiveness
 - [ ] Test dark/light mode toggle
