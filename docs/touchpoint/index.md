@@ -3,257 +3,127 @@ sidebar_position: 1
 title: Touchpoint
 ---
 
-# Touchpoint
+# Touchpoint Overview
+**Tagline:** Dynamic ordering experiences for trade and industry.
 
-**Dynamic Ordering Experiences for Trade & Industry**
+## What It Is
 
-Touchpoint is a modern, slot-based UI framework for building configurable ordering experiences. It provides both admin and customer-facing layers that deeply integrate with CommerceBridge to deliver real-time pricing, inventory, and fulfillment information.
+Touchpoint is a modern UI framework for building B2B commerce experiences. It provides both customer-facing storefronts and admin management interfaces built on a shared component architecture.
 
----
+The framework uses a slot-based design where UI components dynamically adapt to context (product type, user role, tenant configuration). This allows a single codebase to power vastly different experiences across industries and use cases.
 
-## Why Touchpoint?
+Built from the ground up to integrate with CommerceBridge, Touchpoint delivers real-time pricing, dynamic availability, and sophisticated product configuration directly in the user interface.
 
-B2B commerce requires sophisticated, configurable interfaces that can adapt to different industries, products, and workflows. Touchpoint provides:
+## Why It Exists
 
-- **Slot-Based Architecture** — composable UI components that adapt to context
-- **Dual Layers** — admin tools and customer-facing storefronts from one codebase
-- **Real-Time Data** — pricing, availability, and fulfillment calculated on-demand
-- **Configurable Workflows** — adapt to industry-specific requirements
-- **CommerceBridge Native** — built from the ground up to leverage engagement patterns
+Generic e-commerce UIs don't work for B2B complexity. Touchpoint solves:
 
----
+| Problem | Solution |
+|---------|----------|
+| Rigid, one-size-fits-all UIs | Slot-based components that adapt to context |
+| Separate admin and storefront codebases | Unified framework with role-based rendering |
+| Static pricing displays | Real-time price calculation integration |
+| Poor configurability | Dynamic component composition |
+| Limited industry adaptation | Context-aware slot rendering |
 
-## Core Concepts
+## Core Abstractions
 
-### Slot-Based UI Model
+| Term | Meaning |
+|------|---------|
+| **Slot** | Component placeholder that renders based on context |
+| **Context** | Product, user, and tenant information driving rendering |
+| **Layer** | Admin or storefront experience type |
+| **Configuration** | Tenant-specific UI customization |
 
-Touchpoint uses a **slot-based component architecture** where UI elements are dynamically composed based on:
+## High-Level Flow
 
-- Product type and configuration
-- User role and permissions
-- Tenant customizations
-- Workflow stage
-
-```typescript
-// Slots adapt based on context
-<ProductDetailSlot
-  product={product}
-  context="cart"
-  userRole="buyer"
-  tenant={tenant}
-/>
+```mermaid
+flowchart LR
+    USER[User] --> UI[Touchpoint UI]
+    UI --> API[Experience API]
+    API --> BRIDGE[CommerceBridge]
+    BRIDGE --> DATA[Data/State]
+    DATA --> BRIDGE
+    BRIDGE --> API
+    API --> UI
+    UI --> USER
 ```
 
-This allows the same component system to power vastly different experiences without rebuilding the interface.
+## Architecture Layers
 
-[Learn more about Slot-Based UI →](/touchpoint/slot-based-ui)
+### Admin Layer
 
-### Admin vs Storefront
-
-Touchpoint provides **two interconnected layers**:
-
-#### Admin Layer
-
-The admin interface enables:
-
-- Product catalog management
-- Pricing rule configuration
-- Fulfillment zone setup
+Management interface for:
+- Product catalog configuration
+- Pricing rule setup
+- Delivery zone management  
 - Customer account management
-- Order processing and tracking
+- Order processing
 - System configuration
 
-#### Storefront Layer
+### Storefront Layer
 
-The customer-facing experience provides:
-
+Customer experience for:
 - Product discovery and search
 - Real-time pricing and availability
-- Cart building with live calculations
-- Checkout and order placement
-- Order tracking and history
+- Cart building
+- Checkout and payment
+- Order tracking
 - Account management
 
-Both layers share the same underlying component system but render different slot configurations.
+### Shared Components
 
-[Learn more about Admin vs Storefront →](/touchpoint/admin-vs-storefront)
+Both layers use the same:
+- Base component library
+- Slot architecture
+- CommerceBridge integration
+- State management patterns
 
----
+## Slot-Based Architecture
 
-## Key Features
-
-### Real-Time Pricing
-
-Touchpoint integrates with CommerceBridge's pricing engine to provide:
-
-- Live price calculations as users build carts
-- Quantity break visualization
-- Delivery zone-based pricing
-- Customer-specific pricing rules
-- Multi-stage modifier application
-
-### Dynamic Search
-
-Sophisticated product discovery powered by OpenSearch:
-
-- Full-text search across product attributes
-- Spatial filtering (delivery zones, proximity)
-- Faceted navigation
-- Real-time availability filtering
-- Configurable result ranking
-
-### Configurable Products
-
-Deep integration with Eidos for product configuration:
-
-- Rule-based product options
-- Dynamic attribute displays
-- Configuration validation
-- Price impact visualization
-- Save and recall configurations
-
-### Multi-Tenant Customization
-
-Each tenant can customize:
-
-- Branding and themes
-- Product catalog visibility
-- Workflow configurations
-- UI slot arrangements
-- Feature flags and options
-
----
-
-## Architecture
-
-### Frontend Stack
-
-- **Angular** — component framework
-- **TypeScript** — type-safe development
-- **RxJS** — reactive state management
-- **SCSS** — modular styling
-- **Angular Material** — base component library
-
-### Backend Integration
-
-Touchpoint communicates with CommerceBridge through:
-
-- **Experience Layer APIs** — Express.js endpoints that proxy to the Bridge
-- **WebSocket Connections** — real-time updates for pricing and availability
-- **Event Streams** — order status and fulfillment updates
-- **Caching Layers** — Redis for performance optimization
-
-```
-┌─────────────┐
-│  Touchpoint │ (Angular Frontend)
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ Experience  │ (Express.js APIs)
-│   Layer     │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ Commerce    │ (Bridge + Workers)
-│   Bridge    │
-└─────────────┘
+```mermaid
+flowchart TB
+    CONTEXT[Rendering Context] --> SLOT[Slot Placeholder]
+    
+    SLOT --> TYPE{Product Type?}
+    TYPE -->|Configurable| CONFIG[Configuration Component]
+    TYPE -->|Simple| SIMPLE[Simple Product Component]
+    TYPE -->|Bundle| BUNDLE[Bundle Component]
+    
+    SLOT --> ROLE{User Role?}
+    ROLE -->|Admin| ADMIN[Admin View]
+    ROLE -->|Customer| CUSTOMER[Customer View]
 ```
 
-[Learn more about CommerceBridge Integration →](/touchpoint/commercebridge-integration)
+**Example:**
 
----
+Same slot, different renderings:
+```
+ProductDetailSlot + Admin + Configurable Product
+  → Configuration editor with pricing tools
 
-## Use Cases
+ProductDetailSlot + Customer + Simple Product  
+  → Clean product display with buy button
 
-### Trade & Distribution
-
-- Multi-location inventory management
-- Bulk ordering with quantity breaks
-- Delivery zone-based pricing and availability
-- Customer-specific catalogs and pricing
-
-### Manufacturing
-
-- Configurable product ordering (Eidos integration)
-- Lead time calculation and display
-- Production scheduling integration
-- Made-to-order workflows
-
-### Food Service
-
-- Unit of measure conversions (each, case, pallet)
-- Temperature-controlled delivery zones
-- Scheduled delivery windows
-- Recurring order patterns
-
----
-
-## Customization
-
-Touchpoint is designed to be extended and customized:
-
-### Theme Customization
-
-```scss
-// Tenant-specific theme overrides
-:root {
-  --primary-color: #your-brand-color;
-  --accent-color: #your-accent;
-  // ... more theme variables
-}
+ProductDetailSlot + Customer + Configurable Product
+  → Guided configuration wizard
 ```
 
-### Slot Customization
+## Public vs Private
 
-```typescript
-// Custom slot implementation
-@Component({
-  selector: 'app-custom-product-detail',
-  template: `...`
-})
-export class CustomProductDetailComponent implements ProductSlot {
-  // Custom logic for your industry
-}
-```
+| Public (Documented Here) | Private (Not Exposed) |
+|--------------------------|----------------------|
+| Slot concept and patterns | Component implementations |
+| Integration patterns | Tenant-specific configurations |
+| Customization approach | UI state management details |
+| Generic examples | Actual tenant themes |
 
-### Workflow Customization
+## Next
 
-Configure workflows to match your business processes:
-
-- Multi-step approvals
-- Custom validation rules
-- Integration with external systems
-- Industry-specific requirements
-
-[Learn more about Customization →](/touchpoint/customization)
+- [Slot-Based UI →](/touchpoint/slot-based-ui) — Component architecture
+- [Admin vs Storefront →](/touchpoint/admin-vs-storefront) — Layer differences
+- [CommerceBridge Integration →](/touchpoint/commercebridge-integration) — Data integration
 
 ---
 
-## Example Flows
-
-### Product Search to Cart
-
-1. User searches for products with location context
-2. OpenSearch returns relevant results filtered by delivery zones
-3. User views product detail with real-time pricing
-4. User adds to cart, triggering live price calculation
-5. Cart displays pricing, availability, and delivery options
-
-### Checkout and Order Placement
-
-1. User reviews cart with final pricing
-2. User selects delivery location and date preferences
-3. Fulfillment options calculated in real-time
-4. User confirms order
-5. Engagement created in CommerceBridge
-6. Worker processes order and updates inventory
-7. Customer receives confirmation and tracking
-
-[View more Example Flows →](/touchpoint/example-flows)
-
----
-
-**Touchpoint: Crafted experiences for modern commerce.**
-
+**Touchpoint: Adapt to context, deliver experiences.**
