@@ -21,14 +21,8 @@ const sidebars = {
   // CommerceBridge sidebar
   commercebridgeSidebar: [
     'commercebridge/index',
-    {
-      type: 'category',
-      label: 'Getting Started',
-      items: [
-        'commercebridge/overview',
-        'commercebridge/architecture',
-      ],
-    },
+    'commercebridge/overview',
+    'commercebridge/architecture',
     {
       type: 'category',
       label: 'Core Components',
