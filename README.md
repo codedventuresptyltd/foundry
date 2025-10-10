@@ -123,14 +123,23 @@ tags: [relevant, tags]
 
 ## Deployment
 
-Foundry is automatically deployed to Cloudflare Pages via GitHub Actions when changes are pushed to the `main` branch.
+Foundry is automatically deployed to Cloudflare Pages when changes are pushed to the `main` branch.
 
-### Required Secrets
+### Build Configuration
 
-Configure these in your [GitHub repository settings](https://github.com/codedventuresptyltd/foundry/settings/secrets/actions):
+- **Build Command:** `npm run build`
+- **Build Output:** `build/`
+- **Node.js Version:** 20
+- **Root Directory:** `/`
 
-- `CLOUDFLARE_API_TOKEN` — Cloudflare API token with Pages edit permissions
-- `CLOUDFLARE_ACCOUNT_ID` — Your Cloudflare account ID
+### Deployment Process
+
+1. **Push to main** → Cloudflare Pages detects changes
+2. **Build** → Cloudflare builds Docusaurus site with Node.js 20
+3. **Deploy** → Site automatically deployed to global CDN
+4. **Live** → Site available at `foundry.codedventures.com.au`
+
+No GitHub secrets or complex configuration needed - Cloudflare Pages connects directly to GitHub.
 
 ---
 
@@ -138,8 +147,7 @@ Configure these in your [GitHub repository settings](https://github.com/codedven
 
 - [Docusaurus 2](https://docusaurus.io/) — Documentation framework
 - [React](https://reactjs.org/) — UI library
-- [Cloudflare Pages](https://pages.cloudflare.com/) — Hosting
-- [GitHub Actions](https://github.com/features/actions) — CI/CD
+- [Cloudflare Pages](https://pages.cloudflare.com/) — CI/CD & Hosting
 
 ---
 

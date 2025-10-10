@@ -40,16 +40,9 @@ Use this checklist to ensure Foundry is properly configured before going live.
 
 ## Cloudflare Setup
 
-### 1. GitHub Secrets
+### 1. Cloudflare Pages Configuration
 
-Add these secrets to your GitHub repository settings:
-
-- [ ] `CLOUDFLARE_API_TOKEN`
-  - Get from: Cloudflare dashboard → API Tokens
-  - Permission: "Cloudflare Pages - Edit"
-
-- [ ] `CLOUDFLARE_ACCOUNT_ID`
-  - Get from: Cloudflare dashboard → Workers & Pages
+No GitHub secrets needed - Cloudflare Pages connects directly to GitHub:
 
 ### 2. Cloudflare Pages Project
 
@@ -60,6 +53,7 @@ Add these secrets to your GitHub repository settings:
   - Build output directory: `build`
   - Root directory: `/`
   - Environment variables: `NODE_VERSION=20`
+  - Node.js version: 20
 
 ### 3. Custom Domain
 
@@ -72,8 +66,9 @@ Add these secrets to your GitHub repository settings:
 
 - [ ] Set production branch to `main`
 - [ ] Enable automatic deployments on push to `main`
-- [ ] Configure preview deployments for pull requests
+- [ ] Configure preview deployments for pull requests (automatic)
 - [ ] Set up deployment notifications (optional)
+- [ ] Enable "Always Use HTTPS"
 
 ---
 
