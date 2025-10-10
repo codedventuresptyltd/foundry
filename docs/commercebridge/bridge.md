@@ -7,19 +7,134 @@ title: The Bridge
 
 **Single, Common Service Layer**
 
-The Bridge is the **single, common service layer** in CommerceBridge. It provides the foundational architecture that all ecosystem-specific implementations extend.
+The Bridge is the **single, common service layer** in CommerceBridge. It serves as the orchestration hub, state manager, and integration point for the entire commerce system.
 
 ---
 
-## Responsibilities
+## What the Bridge Is
 
-The Bridge handles:
+The Bridge is a **foundational service layer** that provides:
 
-- **Centralized integration management** — Shared, multi-tenant integrations
-- **Multi-tenant resource coordination** — Tenant isolation and configuration
-- **Shared business logic** — Core commerce operations
-- **State caching and persistence** — Redis and MongoDB management
-- **API gateway and routing** — Request orchestration
+### 1. Orchestration Hub
+
+The Bridge coordinates all commerce operations:
+
+- Routes requests to appropriate handlers
+- Manages workflow state across distributed workers
+- Coordinates multi-step processes
+- Ensures consistency across the system
+
+### 2. State Manager
+
+The Bridge owns all state in the system:
+
+- **Redis** — Hot caches, session state, engagement state
+- **MongoDB** — Persistent storage, historical data
+- **OpenSearch** — Full-text search, spatial queries, aggregations
+
+Workers are stateless. The Bridge maintains state.
+
+### 3. Integration Point
+
+The Bridge is where integrations live:
+
+- **For users:** Extend the Bridge to add your integrations (ERP, messaging, payments)
+- **For workers:** Access all data and integrations through the Bridge
+- **For APIs:** Bridge provides the backend for experience layer endpoints
+
+### 4. Multi-Tenant Coordinator
+
+The Bridge enforces tenant isolation:
+
+- All operations are tenant-scoped
+- Data is isolated per tenant
+- Configuration is tenant-specific
+- No cross-tenant data leakage
+
+---
+
+## What the Bridge Does
+
+### Engagement Lifecycle Management
+
+The Bridge manages the full lifecycle of commerce engagements:
+
+```typescript
+// Create engagement
+const engagement = await bridge.createEngagement({
+  customerId: 'customer-123',
+  type: 'order',
+  tenantId: 'acme-corp'
+});
+
+// Track throughout lifecycle
+await bridge.updateEngagement(engagement.id, { status: 'processing' });
+await bridge.updateEngagement(engagement.id, { status: 'confirmed' });
+await bridge.finalizeEngagement(engagement.id);
+```
+
+### Price Calculation
+
+The Bridge handles sophisticated pricing logic:
+
+- Multi-stage modifier application
+- Customer-specific pricing rules
+- Delivery zone adjustments
+- Volume break calculations
+- Price caching and invalidation
+
+```typescript
+const pricing = await bridge.calculatePrice({
+  productId: 'prod-123',
+  quantity: 100,
+  customerId: 'customer-456',
+  deliveryZone: 'US-MIDWEST'
+});
+```
+
+### Inventory Allocation
+
+The Bridge orchestrates inventory across multiple warehouses:
+
+- Real-time availability checking
+- Multi-warehouse allocation
+- Delivery zone optimization
+- Split shipment handling
+- Reservation management
+
+```typescript
+const allocation = await bridge.allocateInventory(
+  engagementId,
+  lineItems
+);
+```
+
+### State Caching
+
+The Bridge provides intelligent caching:
+
+- Hot data in Redis
+- Cache invalidation on updates
+- Automatic cache warming
+- Pattern-based bulk invalidation
+
+```typescript
+await bridge.cacheEngagement(engagement);
+await bridge.invalidateCache(`engagement:${id}`);
+```
+
+### Queue Management
+
+The Bridge manages message queues for worker communication:
+
+- Publish tasks to worker queues
+- Handle queue priorities
+- Manage delayed jobs
+- Track queue metrics
+
+```typescript
+await bridge.publishToQueue('order-processing', jobCard);
+```
 
 ---
 
@@ -33,18 +148,20 @@ This keeps the architecture clean and prevents integration logic from being scat
 
 ---
 
-## Base Bridge Model
+## Core Functions Available
 
-The Core Bridge provides foundational functions, not specific integrations:
+The base Bridge provides these foundational functions that all extended bridges inherit:
 
-- Engagement management
-- Pricing calculations
-- Fulfillment allocation
-- State orchestration
-- Queue operations
-- Cache management
+- **Engagement Management** — Create, read, update, finalize engagements
+- **Pricing** — Calculate prices, apply modifiers, customer pricing
+- **Fulfillment** — Allocate inventory, check availability, optimize
+- **State Management** — Cache operations, invalidation, retrieval
+- **Queue Operations** — Publish, consume, queue management
+- **Product Operations** — Get products, search, SKU lookup
+- **Customer Operations** — Get customers, pricing rules, addresses
+- **Tenant Operations** — Config, feature flags, settings
 
-See [Core Bridge API →](/commercebridge/core-bridge) for complete function reference.
+See [Core Bridge API Reference →](/commercebridge/core-bridge) for complete function documentation with parameters, return types, and examples.
 
 ---
 
