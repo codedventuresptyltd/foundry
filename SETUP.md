@@ -4,7 +4,8 @@ This guide will help you get Foundry up and running, both locally and deployed t
 
 ## Prerequisites
 
-- **Node.js 18+** - [Download here](https://nodejs.org/)
+- **Node.js 20+** - [Download here](https://nodejs.org/)
+  - Required by Docusaurus 3.9.1
 - **npm** - Comes with Node.js
 - **Git** - For version control
 
@@ -59,7 +60,7 @@ This builds the static site into the `build/` directory and serves it locally.
    - **Build command:** `npm run build`
    - **Build output directory:** `build`
    - **Root directory:** `/`
-   - **Node version:** `18`
+   - **Node version:** `20`
 
 ### 2. Configure GitHub Secrets
 

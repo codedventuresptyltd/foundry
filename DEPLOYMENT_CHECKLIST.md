@@ -59,7 +59,7 @@ Add these secrets to your GitHub repository settings:
   - Build command: `npm run build`
   - Build output directory: `build`
   - Root directory: `/`
-  - Environment variables: `NODE_VERSION=18`
+  - Environment variables: `NODE_VERSION=20`
 
 ### 3. Custom Domain
 
