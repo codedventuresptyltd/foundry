@@ -130,6 +130,13 @@ const sidebars = {
         'core/devops-philosophy',
       ],
     },
+    {
+      type: 'category',
+      label: 'Reference',
+      items: [
+        'core/models',
+      ],
+    },
   ],
 };
 
