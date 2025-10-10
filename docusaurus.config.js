@@ -9,7 +9,7 @@ const darkCodeTheme = themes.dracula;
 const config = {
   title: 'Coded Ventures Foundry',
   tagline: 'Where Coded Ventures builds in the open',
-  favicon: 'CodedVenturesLogo.webp',
+  favicon: 'Coded Ventures.ico',
 
   // Set the production url of your site here
   url: 'https://foundry.codedventures.com.au',
@@ -69,7 +69,7 @@ const config = {
       tagName: 'link',
       attributes: {
         rel: 'icon',
-        href: '/CodedVenturesLogo.webp',
+        href: '/Coded Ventures.ico',
       },
     },
   ],
