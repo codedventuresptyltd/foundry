@@ -1,0 +1,225 @@
+---
+sidebar_position: 1
+title: CommerceBridge
+---
+
+# CommerceBridge
+
+**The Framework That Orchestrates Commerce**
+
+CommerceBridge is a sophisticated orchestration layer that models commerce as **engagements**, not just orders. It's the central nervous system for modern B2B commerce operations, coordinating between distributed workers, managing state, handling integrations, and providing intelligent routing for complex commerce workflows.
+
+---
+
+## Why CommerceBridge?
+
+Traditional commerce systems treat orders as the primary entity. CommerceBridge takes a different approach:
+
+- **Engagement-First** — commerce is a conversation, not just a transaction
+- **Distributed by Design** — built for worker ecosystems and elastic scale
+- **Integration Hub** — centralized, reusable integrations for multi-tenant systems
+- **State Management** — sophisticated caching and state orchestration
+- **AI-Ready** — built to leverage intelligent agents and automation
+
+---
+
+## Core Components
+
+### The Bridge
+
+The Bridge is the **single, common service layer** in the system. It provides:
+
+- Centralized integration management (messaging, payments, shipping, etc.)
+- Multi-tenant resource coordination
+- Shared business logic and validation
+- State caching and persistence
+- API gateway and routing
+
+**Rule:** All shared, reusable integrations must live in the Bridge.
+
+[Learn more about Bridge Architecture →](/commercebridge/bridge)
+
+### Engagements
+
+Engagements are the heart of CommerceBridge. An engagement represents the full lifecycle of a commerce interaction:
+
+- Customer inquiry and quoting
+- Cart building and pricing
+- Order placement and confirmation
+- Fulfillment tracking
+- Post-order updates and modifications
+
+Each engagement maintains its own state, history, and context across the entire journey.
+
+[Learn more about Engagements →](/commercebridge/engagement)
+
+### Workers
+
+Workers are **stateless, replaceable processing engines**. They:
+
+- Execute tasks, jobs, or messages
+- Scale elastically (replicate, specialize, or retire as needed)
+- Consume data primarily through the Bridge
+- Can implement client-specific integrations in dedicated service files
+
+**Philosophy:** Workers are ephemeral. "Starve old workers, evolve ecosystems."
+
+[Learn more about Workers →](/commercebridge/workers)
+
+---
+
+## Architecture Principles
+
+### 1. Centralized Integrations
+
+All shared integrations (multi-tenant, reusable, external systems) live in the Bridge:
+
+```typescript
+// Bridge provides centralized integrations
+import { twilioFactory } from '@bridge/integrations/twilio';
+import { mailgunFactory } from '@bridge/integrations/mailgun';
+import { stripeFactory } from '@bridge/integrations/stripe';
+```
+
+### 2. Client-Specific Flexibility
+
+Workers can implement client-specific integrations (bespoke ERP systems, custom APIs), but this code lives in dedicated Worker service files:
+
+```typescript
+// Worker service file for client-specific integration
+// worker-services/acme-erp.service.ts
+export class AcmeErpIntegration {
+  // Client-specific logic here
+}
+```
+
+### 3. No Side Services
+
+**Don't create or suggest standalone side-services** outside of the Bridge or Workers. This keeps the architecture clean and maintainable.
+
+### 4. Queue-Based Orchestration
+
+Workers communicate through message queues (RabbitMQ, Kafka), not direct HTTP calls. This enables:
+
+- Asynchronous processing
+- Retry logic and fault tolerance
+- Load balancing and scaling
+- Clear service boundaries
+
+---
+
+## Key Features
+
+### Multi-Tenant Architecture
+
+CommerceBridge is built for multi-tenancy from the ground up:
+
+- Isolated data per tenant
+- Shared infrastructure with tenant-level customization
+- Per-tenant configuration and feature flags
+- Secure tenant isolation at every layer
+
+### Pricing Engine
+
+Sophisticated pricing logic with:
+
+- Multi-stage price modifiers
+- Delivery zone-based pricing
+- Quantity breaks and volume discounts
+- Customer-specific pricing rules
+- Real-time calculation and caching
+
+### Fulfillment Orchestration
+
+Intelligent fulfillment management:
+
+- Multi-warehouse inventory allocation
+- Delivery zone optimization
+- Carrier selection and routing
+- Split shipment handling
+- Real-time availability checking
+
+### State Management
+
+Advanced caching and state management:
+
+- Redis-based caching layers
+- MongoDB for persistent storage
+- OpenSearch for full-text and spatial queries
+- Optimistic locking and conflict resolution
+
+---
+
+## Integration Patterns
+
+CommerceBridge provides clean integration patterns for common scenarios:
+
+### External API Integration (Bridge)
+
+```typescript
+// Shared integration in Bridge
+export const externalServiceFactory = (config: BridgeConfig) => {
+  return {
+    async sendNotification(data: NotificationData) {
+      // Multi-tenant, reusable logic
+    }
+  };
+};
+```
+
+### Worker Processing
+
+```typescript
+// Worker consumes messages and orchestrates
+export const orderProcessorWorker = async (message: OrderMessage) => {
+  const engagement = await bridge.getEngagement(message.engagementId);
+  await bridge.fulfillment.allocateInventory(engagement);
+  await bridge.messaging.notifyCustomer(engagement);
+};
+```
+
+### Client-Specific Integration (Worker Service)
+
+```typescript
+// Worker service file for client-specific needs
+// workers/acme/services/custom-erp.service.ts
+export class CustomErpService {
+  async syncOrder(order: Order) {
+    // Client-specific ERP integration
+  }
+}
+```
+
+---
+
+## Next Steps
+
+<div className="row">
+  <div className="col col--6">
+    <div className="card">
+      <div className="card__header">
+        <h3>📖 Learn the Architecture</h3>
+      </div>
+      <div className="card__body">
+        <p>Understand how CommerceBridge is designed and why</p>
+        <a href="/commercebridge/architecture">Architecture Overview →</a>
+      </div>
+    </div>
+  </div>
+  <div className="col col--6">
+    <div className="card">
+      <div className="card__header">
+        <h3>🔌 SDK Reference</h3>
+      </div>
+      <div className="card__body">
+        <p>Explore the CommerceBridge SDK and integration patterns</p>
+        <a href="/commercebridge/sdk-reference">SDK Documentation →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+---
+
+**CommerceBridge: Where commerce orchestration meets engineering craft.**
+

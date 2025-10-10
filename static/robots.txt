@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://foundry.codedventures.io/sitemap.xml
+
