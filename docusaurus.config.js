@@ -116,12 +116,6 @@ const config = {
             label: 'Eidos',
           },
           {
-            type: 'docSidebar',
-            sidebarId: 'coreSidebar',
-            position: 'left',
-            label: 'Core Concepts',
-          },
-          {
             to: '/fieldnotes',
             label: 'Field Notes',
             position: 'left'
