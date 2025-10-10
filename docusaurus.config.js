@@ -98,6 +98,11 @@ const config = {
         },
         items: [
           {
+            to: '/',
+            position: 'left',
+            label: 'Overview',
+          },
+          {
             type: 'docSidebar',
             sidebarId: 'commercebridgeSidebar',
             position: 'left',
