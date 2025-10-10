@@ -21,7 +21,6 @@ const sidebars = {
   // CommerceBridge sidebar
   commercebridgeSidebar: [
     'commercebridge/index',
-    'commercebridge/overview',
     'commercebridge/architecture',
     {
       type: 'category',
