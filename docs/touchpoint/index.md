@@ -255,34 +255,5 @@ Configure workflows to match your business processes:
 
 ---
 
-## Next Steps
-
-<div className="row">
-  <div className="col col--6">
-    <div className="card">
-      <div className="card__header">
-        <h3>🎨 UI Architecture</h3>
-      </div>
-      <div className="card__body">
-        <p>Learn about the slot-based component system</p>
-        <a href="/touchpoint/slot-based-ui">Slot-Based UI →</a>
-      </div>
-    </div>
-  </div>
-  <div className="col col--6">
-    <div className="card">
-      <div className="card__header">
-        <h3>🔧 Customization</h3>
-      </div>
-      <div className="card__body">
-        <p>Extend and customize Touchpoint for your needs</p>
-        <a href="/touchpoint/customization">Customization Guide →</a>
-      </div>
-    </div>
-  </div>
-</div>
-
----
-
 **Touchpoint: Crafted experiences for modern commerce.**
 

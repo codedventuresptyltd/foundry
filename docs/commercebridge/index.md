@@ -85,26 +85,9 @@ The core Bridge provides **foundational functions and patterns**, not specific i
 
 ### 2. Extending the Bridge
 
-Users extend the base Bridge model to add their own functionality:
+Users extend the base Bridge model to add their own functionality. This pattern allows complete flexibility while maintaining core functionality.
 
-```typescript
-// Extend the base Bridge for your tenant/ecosystem
-import { BaseBridge } from '@commercebridge/core';
-
-export class MyEcosystemBridge extends BaseBridge {
-  // Add your own functions
-  async integrateWithExternalSystem(data: any) {
-    // Your custom integration logic
-  }
-  
-  // Add tenant-specific business logic
-  async processCustomWorkflow(engagement: Engagement) {
-    // Your workflow implementation
-  }
-}
-```
-
-This pattern allows complete flexibility while maintaining core functionality.
+[Learn how to extend the Bridge →](/commercebridge/bridge)
 
 ### 3. No Side Services
 
@@ -232,35 +215,6 @@ export const orderProcessorWorker = async (message: OrderMessage) => {
   await bridge.sendSms(engagement.customerId, 'Order confirmed!');
 };
 ```
-
----
-
-## Next Steps
-
-<div className="row">
-  <div className="col col--6">
-    <div className="card">
-      <div className="card__header">
-        <h3>📖 Learn the Architecture</h3>
-      </div>
-      <div className="card__body">
-        <p>Understand how CommerceBridge is designed and why</p>
-        <a href="/commercebridge/architecture">Architecture Overview →</a>
-      </div>
-    </div>
-  </div>
-  <div className="col col--6">
-    <div className="card">
-      <div className="card__header">
-        <h3>🔌 SDK Reference</h3>
-      </div>
-      <div className="card__body">
-        <p>Explore the CommerceBridge SDK and integration patterns</p>
-        <a href="/commercebridge/sdk-reference">SDK Documentation →</a>
-      </div>
-    </div>
-  </div>
-</div>
 
 ---
 

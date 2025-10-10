@@ -313,34 +313,5 @@ Eidos is implemented as:
 
 ---
 
-## Next Steps
-
-<div className="row">
-  <div className="col col--6">
-    <div className="card">
-      <div className="card__header">
-        <h3>🧬 Product DNA</h3>
-      </div>
-      <div className="card__body">
-        <p>Understand how products are modeled in Eidos</p>
-        <a href="/eidos/product-dna">Product DNA →</a>
-      </div>
-    </div>
-  </div>
-  <div className="col col--6">
-    <div className="card">
-      <div className="card__header">
-        <h3>📋 Rule Sets</h3>
-      </div>
-      <div className="card__body">
-        <p>Learn how to define business rules and validations</p>
-        <a href="/eidos/rule-sets">Rule Sets →</a>
-      </div>
-    </div>
-  </div>
-</div>
-
----
-
 **Eidos: Where products know themselves.**
 

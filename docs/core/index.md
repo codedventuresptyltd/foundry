@@ -11,6 +11,36 @@ Beyond individual products, Coded Ventures has developed a set of architectural 
 
 ---
 
+## Overview
+
+Our core concepts span three main areas:
+
+### Architecture Patterns
+
+Distributed systems design and orchestration:
+
+- **[Worker Ecosystems](/core/worker-ecosystems)** — Distributed, autonomous processing systems
+- **[Bridge Architecture](/core/bridge-architecture)** — Centralized integration and orchestration layer
+- **[Engagement-Centric Design](/core/engagement-centric-design)** — Modeling commerce as conversations, not transactions
+
+### Commerce Concepts
+
+Domain-specific patterns for B2B commerce:
+
+- **[Pricing Models](/core/pricing-models)** — Multi-stage pricing with sophisticated modifiers
+- **[Caching Strategies](/core/caching-strategies)** — Multi-layer state management and optimization
+- **[Fulfillment](/core/fulfillment)** — Intelligent inventory allocation and delivery orchestration
+
+### Operations
+
+Running and scaling distributed systems:
+
+- **[Tenant Isolation](/core/tenant-isolation)** — Multi-tenant security and data separation
+- **[Security](/core/security)** — Defense-in-depth security approach
+- **[DevOps Philosophy](/core/devops-philosophy)** — "Starve old workers, evolve ecosystems"
+
+---
+
 ## Architecture Patterns
 
 ### [Worker Ecosystems](/core/worker-ecosystems)
@@ -249,46 +279,6 @@ Systems must change over time. Design for evolution, not just the current requir
 ### Pragmatism
 
 Perfect is the enemy of good. Ship working solutions, iterate based on real usage.
-
----
-
-## Next Steps
-
-<div className="row">
-  <div className="col col--4">
-    <div className="card">
-      <div className="card__header">
-        <h3>🏗️ Architecture</h3>
-      </div>
-      <div className="card__body">
-        <p>Deep dive into our architectural patterns</p>
-        <a href="/core/worker-ecosystems">Worker Ecosystems →</a>
-      </div>
-    </div>
-  </div>
-  <div className="col col--4">
-    <div className="card">
-      <div className="card__header">
-        <h3>💰 Commerce</h3>
-      </div>
-      <div className="card__body">
-        <p>Explore commerce-specific concepts</p>
-        <a href="/core/pricing-models">Pricing Models →</a>
-      </div>
-    </div>
-  </div>
-  <div className="col col--4">
-    <div className="card">
-      <div className="card__header">
-        <h3>🔒 Operations</h3>
-      </div>
-      <div className="card__body">
-        <p>Learn about security and operations</p>
-        <a href="/core/tenant-isolation">Tenant Isolation →</a>
-      </div>
-    </div>
-  </div>
-</div>
 
 ---
 
