@@ -70,28 +70,41 @@ Workers are **stateless, replaceable processing engines**. They:
 
 ## Architecture Principles
 
-### 1. Centralized Integrations
+### 1. Base Bridge Model
 
-All shared integrations (multi-tenant, reusable, external systems) live in the Bridge:
+The core Bridge provides **foundational functions and patterns**, not specific integrations. It includes:
+
+- Engagement management
+- State orchestration
+- Pricing calculations
+- Fulfillment allocation
+- Cache management
+- Queue communication
+
+**Important:** The Bridge does NOT include integrations for public/external users. These are tenant-specific and must be implemented by extending the Bridge.
+
+### 2. Extending the Bridge
+
+Users extend the base Bridge model to add their own functionality:
 
 ```typescript
-// Bridge provides centralized integrations
-import { twilioFactory } from '@bridge/integrations/twilio';
-import { mailgunFactory } from '@bridge/integrations/mailgun';
-import { stripeFactory } from '@bridge/integrations/stripe';
-```
+// Extend the base Bridge for your tenant/ecosystem
+import { BaseBridge } from '@commercebridge/core';
 
-### 2. Client-Specific Flexibility
-
-Workers can implement client-specific integrations (bespoke ERP systems, custom APIs), but this code lives in dedicated Worker service files:
-
-```typescript
-// Worker service file for client-specific integration
-// worker-services/acme-erp.service.ts
-export class AcmeErpIntegration {
-  // Client-specific logic here
+export class MyEcosystemBridge extends BaseBridge {
+  // Add your own functions
+  async integrateWithExternalSystem(data: any) {
+    // Your custom integration logic
+  }
+  
+  // Add tenant-specific business logic
+  async processCustomWorkflow(engagement: Engagement) {
+    // Your workflow implementation
+  }
 }
 ```
+
+This pattern allows complete flexibility while maintaining core functionality.
 
 ### 3. No Side Services
 
@@ -150,44 +163,97 @@ Advanced caching and state management:
 
 ---
 
-## Integration Patterns
+## Core Bridge Functions
 
-CommerceBridge provides clean integration patterns for common scenarios:
+The base Bridge provides these foundational functions:
 
-### External API Integration (Bridge)
+### Engagement Management
 
 ```typescript
-// Shared integration in Bridge
-export const externalServiceFactory = (config: BridgeConfig) => {
-  return {
-    async sendNotification(data: NotificationData) {
-      // Multi-tenant, reusable logic
-    }
-  };
-};
+// Create and manage engagements
+await bridge.createEngagement(params);
+await bridge.getEngagement(engagementId);
+await bridge.updateEngagement(engagementId, updates);
+await bridge.finalizeEngagement(engagementId);
 ```
 
-### Worker Processing
+### Pricing
 
 ```typescript
-// Worker consumes messages and orchestrates
-export const orderProcessorWorker = async (message: OrderMessage) => {
-  const engagement = await bridge.getEngagement(message.engagementId);
-  await bridge.fulfillment.allocateInventory(engagement);
-  await bridge.messaging.notifyCustomer(engagement);
-};
+// Calculate prices with modifiers
+await bridge.calculatePrice(product, quantity, context);
+await bridge.applyPriceModifiers(basePrice, modifiers);
+await bridge.getCustomerPricing(customerId, productId);
 ```
 
-### Client-Specific Integration (Worker Service)
+### Fulfillment
 
 ```typescript
-// Worker service file for client-specific needs
-// workers/acme/services/custom-erp.service.ts
-export class CustomErpService {
-  async syncOrder(order: Order) {
-    // Client-specific ERP integration
+// Allocate inventory and manage fulfillment
+await bridge.allocateInventory(engagementId, lineItems);
+await bridge.checkAvailability(productId, quantity, deliveryZone);
+await bridge.optimizeFulfillment(engagement);
+```
+
+### State Management
+
+```typescript
+// Cache and retrieve state
+await bridge.cacheEngagement(engagement);
+await bridge.invalidateCache(key);
+await bridge.getFromCache(key);
+```
+
+### Queue Operations
+
+```typescript
+// Publish messages to workers
+await bridge.publishToQueue(queueName, message);
+await bridge.consumeFromQueue(queueName, handler);
+```
+
+---
+
+## Extension Patterns
+
+### Extending for Your Ecosystem
+
+```typescript
+// Create your ecosystem-specific Bridge
+export class AcmeCommerceBridge extends BaseBridge {
+  // Add external system integrations
+  async syncToErp(order: Order) {
+    const erpClient = new AcmeErpClient(this.config);
+    return await erpClient.createOrder(order);
+  }
+  
+  // Add custom business logic
+  async applyAcmeDiscounts(engagement: Engagement) {
+    // Your specific discount logic
+  }
+  
+  // Add messaging integrations
+  async sendSms(customerId: string, message: string) {
+    const twilioClient = new TwilioClient(this.config);
+    return await twilioClient.send(customerId, message);
   }
 }
+```
+
+### Using Extended Bridge in Workers
+
+```typescript
+// Workers use your extended Bridge
+export const orderProcessorWorker = async (message: OrderMessage) => {
+  const bridge = new AcmeCommerceBridge(config);
+  
+  const engagement = await bridge.getEngagement(message.engagementId);
+  await bridge.allocateInventory(engagement.id, engagement.lineItems);
+  
+  // Use your custom functions
+  await bridge.syncToErp(engagement.order);
+  await bridge.sendSms(engagement.customerId, 'Order confirmed!');
+};
 ```
 
 ---
