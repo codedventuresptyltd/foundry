@@ -127,7 +127,7 @@ Foundry is automatically deployed to Cloudflare Pages via GitHub Actions when ch
 
 ### Required Secrets
 
-Configure these in your [GitHub repository settings](https://github.com/codedventuresptyltd/public/settings/secrets/actions):
+Configure these in your [GitHub repository settings](https://github.com/codedventuresptyltd/foundry/settings/secrets/actions):
 
 - `CLOUDFLARE_API_TOKEN` — Cloudflare API token with Pages edit permissions
 - `CLOUDFLARE_ACCOUNT_ID` — Your Cloudflare account ID

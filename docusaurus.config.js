@@ -18,7 +18,7 @@ const config = {
 
   // GitHub pages deployment config.
   organizationName: 'codedventuresptyltd',
-  projectName: 'public',
+  projectName: 'foundry',
 
   onBrokenLinks: 'warn',
   
@@ -44,7 +44,7 @@ const config = {
           routeBasePath: '/',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/codedventuresptyltd/public/tree/main/',
+          editUrl: 'https://github.com/codedventuresptyltd/foundry/tree/main/',
         },
         blog: {
           path: 'fieldnotes',
@@ -127,7 +127,7 @@ const config = {
             position: 'left'
           },
           {
-            href: 'https://github.com/codedventuresptyltd/public',
+            href: 'https://github.com/codedventuresptyltd/foundry',
             label: 'GitHub',
             position: 'right',
           },
@@ -171,7 +171,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/codedventuresptyltd/public',
+                href: 'https://github.com/codedventuresptyltd/foundry',
               },
             ],
           },

@@ -13,8 +13,8 @@ This guide will help you get Foundry up and running, both locally and deployed t
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/codedventuresptyltd/public.git
-cd public
+git clone https://github.com/codedventuresptyltd/foundry.git
+cd foundry
 ```
 
 ### 2. Install Dependencies
@@ -54,7 +54,7 @@ This builds the static site into the `build/` directory and serves it locally.
 
 1. Log in to your Cloudflare dashboard
 2. Go to **Pages** → **Create a project**
-3. Connect your GitHub repository (`codedventuresptyltd/public`)
+3. Connect your GitHub repository (`codedventuresptyltd/foundry`)
 4. Configure build settings:
    - **Build command:** `npm run build`
    - **Build output directory:** `build`

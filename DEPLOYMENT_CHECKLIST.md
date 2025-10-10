@@ -54,7 +54,7 @@ Add these secrets to your GitHub repository settings:
 ### 2. Cloudflare Pages Project
 
 - [ ] Create new Pages project in Cloudflare
-- [ ] Connect to GitHub repository `codedventuresptyltd/public`
+- [ ] Connect to GitHub repository `codedventuresptyltd/foundry`
 - [ ] Configure build settings:
   - Build command: `npm run build`
   - Build output directory: `build`
