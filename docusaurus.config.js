@@ -9,7 +9,7 @@ const darkCodeTheme = themes.dracula;
 const config = {
   title: 'Coded Ventures Foundry',
   tagline: 'Where Coded Ventures builds in the open',
-  favicon: 'img/logo.svg',
+  favicon: 'CodedVenturesLogo.webp',
 
   // Set the production url of your site here
   url: 'https://foundry.codedventures.com.au',
@@ -69,7 +69,7 @@ const config = {
       tagName: 'link',
       attributes: {
         rel: 'icon',
-        href: '/img/logo.svg',
+        href: '/CodedVenturesLogo.webp',
       },
     },
   ],
@@ -78,7 +78,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/logo.svg',
+      image: 'CodedVenturesLogo.webp',
       
       // SEO metadata
       metadata: [
@@ -94,7 +94,7 @@ const config = {
         title: 'Foundry',
         logo: {
           alt: 'Coded Ventures Foundry Logo',
-          src: 'img/logo.svg',
+          src: 'CodedVenturesLogo.webp',
         },
         items: [
           {
