@@ -126,7 +126,7 @@ const config = {
             position: 'left'
           },
           {
-            href: 'https://github.com/codedventuresptyltd/foundry',
+            href: 'https://github.com/codedventuresptyltd/public',
             label: 'GitHub',
             position: 'right',
           },
@@ -170,7 +170,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/codedventuresptyltd/foundry',
+                href: 'https://github.com/codedventuresptyltd/public',
               },
             ],
           },
