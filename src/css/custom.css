@@ -154,12 +154,12 @@ code {
 }
 
 .navbar__logo {
-  height: 2.5rem;
+  height: 2rem;
   margin-right: 0.5rem;
 }
 
 .navbar__logo img {
-  height: 2.5rem;
+  height: 2rem;
   width: auto;
 }
 
@@ -171,6 +171,27 @@ code {
   margin-right: 2rem;
   padding-right: 2rem;
   border-right: 1px solid rgba(122, 133, 153, 0.2);
+}
+
+/* Mobile: Stack logo and title vertically */
+@media screen and (max-width: 768px) {
+  .navbar__brand {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  
+  .navbar__logo {
+    margin-right: 0;
+    margin-bottom: 0.25rem;
+  }
+  
+  .navbar__title {
+    font-size: 1.2rem;
+    margin-right: 0;
+    padding-right: 0;
+    border-right: none;
+    margin-bottom: 0.5rem;
+  }
 }
 
 .navbar__item {
