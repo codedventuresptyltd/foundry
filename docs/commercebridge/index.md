@@ -3,174 +3,220 @@ sidebar_position: 1
 title: CommerceBridge
 ---
 
-# CommerceBridge
+# CommerceBridge Overview
+**Tagline:** The framework that models commerce as conversations, not transactions.
 
-**The Framework That Orchestrates Commerce**
+## What It Is
 
-CommerceBridge is a composable orchestration framework that models commerce as **engagements**, not just orders.  
-It acts as the central nervous system for modern B2B commerce — coordinating distributed workers, managing state, handling integrations, and intelligently routing complex workflows between systems.
+CommerceBridge is a distributed commerce orchestration framework built for complex B2B operations. It models the entire commerce journey as an **engagement** rather than isolated transactions.
 
----
+The framework consists of a central orchestration layer (the Bridge) that coordinates stateless processing units (Workers) to handle sophisticated commerce workflows. It's designed for multi-tenant environments where each tenant extends the base system with their own business logic and integrations.
 
-## Why CommerceBridge?
+Unlike cart-focused e-commerce platforms, CommerceBridge handles complex B2B scenarios: configurable products, sophisticated pricing rules, multi-warehouse fulfillment, and long-running commerce conversations.
 
-Traditional commerce systems treat orders as the primary entity. CommerceBridge flips that model.
+## Why It Exists
 
-- **Engagement-First** — commerce is a conversation, not just a transaction  
-- **Distributed by Design** — built for elastic worker ecosystems and real-time scaling  
-- **Integration Hub** — unified service layer for shared integrations and tenant-specific logic  
-- **Stateful by Nature** — orchestrates state transitions across multiple systems with consistency  
-- **AI-Ready** — designed for intelligent agents, adaptive pricing, and automation
+Traditional commerce systems struggle with modern B2B requirements. CommerceBridge addresses these challenges:
 
-CommerceBridge isn’t a single application — it’s the connective tissue that lets applications and services work together as one.
+| Problem | Solution |
+|---------|----------|
+| Orders treated as isolated events | Engagements model full conversation lifecycle |
+| Monolithic, hard-to-scale architecture | Distributed workers with elastic scaling |
+| Rigid, limited pricing models | Multi-stage configurable pricing engine |
+| Single-warehouse limitations | Multi-warehouse optimization with delivery zones |
+| Tightly coupled business logic | Extension pattern for tenant customization |
+| Poor multi-tenant design | Built for multi-tenancy from the ground up |
 
----
+## Core Abstractions
 
-## Core Components
+| Term | Meaning |
+|------|---------|
+| **Bridge** | Central orchestration layer managing state and coordination |
+| **Engagement** | Lifecycle container for the full commerce conversation |
+| **Worker** | Stateless processor executing discrete business tasks |
+| **Job Card** | Unit of work delivered to workers |
+| **Pricing Engine** | Multi-stage price calculation with modifiers |
+| **Fulfillment Engine** | Intelligent multi-warehouse inventory allocation |
+
+## High-Level Flow
+
+```mermaid
+flowchart LR
+    A[Client Layer] --> B[API Layer]
+    B --> C[Bridge]
+    C --> D[Workers]
+    D --> C
+    C --> E[External Systems]
+    E --> C
+    C --> B
+    B --> A
+```
+
+**Request flow:**
+1. Client (UI) makes request
+2. API layer receives and validates
+3. Bridge orchestrates operation
+4. Workers process async tasks
+5. Workers use Bridge for all operations
+6. Bridge coordinates with external systems
+7. Results flow back to client
+
+## System Architecture
+
+```mermaid
+flowchart TB
+    subgraph "Experience Layer"
+        UI[Touchpoint UI]
+        API[REST APIs]
+    end
+    
+    subgraph "Orchestration Layer"
+        BRIDGE[Bridge<br/>State & Coordination]
+    end
+    
+    subgraph "Processing Layer"
+        W1[Order<br/>Processor]
+        W2[Inventory<br/>Allocator]
+        W3[Notification<br/>Sender]
+    end
+    
+    subgraph "Data Layer"
+        CACHE[(Cache Layer)]
+        STORE[(Data Store)]
+        SEARCH[(Search Engine)]
+    end
+    
+    UI --> API
+    API --> BRIDGE
+    BRIDGE --> W1
+    BRIDGE --> W2
+    BRIDGE --> W3
+    BRIDGE --> CACHE
+    BRIDGE --> STORE
+    BRIDGE --> SEARCH
+    W1 --> BRIDGE
+    W2 --> BRIDGE
+    W3 --> BRIDGE
+```
+
+## Key Components
 
 ### The Bridge
+Central orchestration layer that:
+- Manages all system state
+- Provides core commerce functions
+- Coordinates distributed workers
+- Enforces multi-tenant isolation
 
-The **Bridge** is the common service layer for every ecosystem. It defines the foundational language and runtime patterns used across integrations.
-
-**Responsibilities:**
-- Centralized integration management (ERP, pricing, messaging, payments, logistics)
-- Multi-tenant coordination and validation
-- State caching and persistence
-- Message routing and queue abstraction
-- Shared business logic for engagement and order lifecycles
-
-> **Rule:** All shared or reusable integrations live inside the Bridge layer.  
-> External systems integrate *through* the Bridge — never around it.
-
-[Learn more about Bridge Architecture →](/commercebridge/bridge)
-
----
-
-### Engagements
-
-An **Engagement** represents the entire lifecycle of a commercial interaction — from quote to completion.
-
-**Example flow:**
-1. Customer builds a cart or requests a quote  
-2. Pricing is resolved through integrated bridges  
-3. Orders are created and dispatched  
-4. Fulfillment and shipment updates are synchronized  
-5. Post-order modifications and reconciliations are managed
-
-Each engagement maintains its own **state**, **history**, and **context** — giving visibility across all related orders, communications, and decisions.
-
-[Learn more about Engagements →](/commercebridge/engagement)
-
----
+[Learn about The Bridge →](/commercebridge/bridge)
 
 ### Workers
+Stateless processors that:
+- Execute specific business tasks
+- Consume job cards from queues
+- Scale elastically based on load
+- Exit gracefully when replaced
 
-**Workers** are stateless processors that execute defined tasks.  
-They form an elastic execution layer around CommerceBridge.
+[Learn about Workers →](/commercebridge/workers)
 
-**Key traits:**
-- Stateless and replaceable — no persistence inside workers  
-- Task-based execution (consume → process → exit)  
-- Scalable and specialized — replicate or retire automatically  
-- Operate exclusively through Bridge interfaces
+### Engagements
+Lifecycle containers that:
+- Model commerce as conversations
+- Maintain state across interactions
+- Track full customer journey
+- Provide complete audit trail
 
-> **Philosophy:** Workers are ephemeral. *Starve old workers, evolve ecosystems.*
-
-[Learn more about Workers →](/commercebridge/workers)
-
----
-
-## Architecture Principles
-
-### 1. Base Bridge Model
-The base Bridge defines the **foundation and patterns** every ecosystem inherits — engagement management, state orchestration, pricing, fulfillment, and message handling.  
-It provides shared primitives, not specific business integrations.
-
-> **Note:** Public instances of the Bridge should never include tenant or client-specific integrations.
-
----
-
-### 2. Extending the Bridge
-Every deployment can extend the base Bridge to add its own logic, integrations, and workflows — while preserving the common framework.
-
-This gives ecosystems full flexibility while maintaining shared compatibility.
-
-[Learn how to extend the Bridge →](/commercebridge/bridge)
-
----
-
-### 3. No Side Services
-Avoid standalone microservices that duplicate Bridge responsibilities.  
-All persistent or shared business logic should live inside the Bridge or be executed via Workers.  
-This principle keeps ecosystems maintainable and auditable.
-
----
-
-### 4. Queue-Based Orchestration
-CommerceBridge uses message queues for inter-service communication — enabling:
-
-- Asynchronous and event-driven workflows  
-- Retry and fault-tolerant execution  
-- Load-balanced scaling across worker pools  
-- Clean separation of concerns between Bridge and Workers
-
----
-
-## Key Features
-
-### Multi-Tenant Architecture
-CommerceBridge supports full multi-tenancy from the ground up:
-- Isolated tenant data with shared infrastructure
-- Configurable integrations per tenant
-- Dynamic feature flags and pricing models
-- Strict isolation between ecosystems
-
----
+[Learn about Engagements →](/commercebridge/engagement)
 
 ### Pricing Engine
-Flexible, rule-based pricing framework supporting:
-- Tiered or quantity-based pricing  
-- Customer and supplier-specific rules  
-- Configurable modifiers and adjustments  
-- Real-time calculation and caching  
+Calculation engine that:
+- Applies multi-stage price modifiers
+- Handles volume breaks and customer pricing
+- Adjusts for delivery zones
+- Caches for performance
+
+[Learn about Pricing Engine →](/commercebridge/pricing-engine)
+
+### Fulfillment Engine
+Allocation system that:
+- Manages multi-warehouse inventory
+- Optimizes delivery from warehouse network
+- Filters by delivery zones
+- Handles split shipments
+
+[Learn about Fulfillment Engine →](/commercebridge/fulfillment-engine)
+
+## Public vs Private
+
+| Public (Documented Here) | Private (Not Exposed) |
+|--------------------------|----------------------|
+| Core concepts and patterns | Implementation details |
+| Base Bridge function signatures | Database schemas |
+| Worker patterns and lifecycle | Queue topic names |
+| Extension interfaces | Infrastructure specifics |
+| Generic pseudo-code examples | Tenant-specific logic |
+| Architectural diagrams | Production configurations |
+
+## Extension Model
+
+CommerceBridge is designed to be **extended, not modified**:
+
+### Extend the Bridge
+
+Add your integrations and business logic:
+
+```ts
+export class MyBridge extends BaseBridge {
+  async syncToErp(order: Order) {
+    // Your ERP integration
+  }
+  
+  async customPricingLogic(context: PricingContext) {
+    // Your pricing rules
+  }
+}
+```
+
+### Create Workers
+
+Build task-specific processors:
+
+```ts
+export class MyWorker extends BaseWorker {
+  async work(job: JobCard) {
+    // Your business task
+  }
+}
+```
+
+### Configure Pricing
+
+Define your price modifiers and rules:
+
+```ts
+const modifiers = [
+  { type: 'volume-discount', value: 0.15, operation: 'multiply' },
+  { type: 'zone-upcharge', value: 5, operation: 'add' }
+]
+```
+
+### Define Zones
+
+Set up your delivery network:
+
+```ts
+const zones = [
+  { id: 'midwest', warehouses: ['warehouse-a'], deliveryDays: 2 },
+  { id: 'southwest', warehouses: ['warehouse-b'], deliveryDays: 3 }
+]
+```
+
+## Next
+
+- [Overview →](/commercebridge/overview) — Detailed framework overview
+- [Architecture →](/commercebridge/architecture) — System architecture and patterns
+- [Core Bridge API →](/commercebridge/core-bridge) — Complete function reference
 
 ---
 
-### Fulfillment Orchestration
-Adaptive fulfillment engine for distributed supply networks:
-- Multi-warehouse and zone allocation  
-- Carrier and route optimization  
-- Split order and partial fulfillment handling  
-- Live synchronization with external systems  
-
----
-
-### State Management
-Centralized state orchestration ensures data consistency and traceability:
-- Cached operational state for performance  
-- Persistent history for audit and reconciliation  
-- Versioned and immutable lifecycle events  
-- Conflict detection and optimistic updates  
-
----
-
-## Core Bridge Functions
-
-The base Bridge exposes high-level operations shared across all ecosystems.
-
-```typescript
-// Engagement management
-await bridge.createEngagement(params);
-await bridge.getEngagement(engagementId);
-
-// Pricing calculations
-await bridge.calculatePrice(product, quantity, context);
-
-// Fulfillment allocation
-await bridge.allocateInventory(engagementId, lineItems);
-
-// State management
-await bridge.cacheEngagement(engagement);
-
-// Queue operations
-await bridge.publishToQueue(queueName, message);
+**CommerceBridge: Orchestration for complex commerce.**
