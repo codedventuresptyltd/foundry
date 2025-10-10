@@ -155,7 +155,7 @@ code {
 
 .navbar__logo {
   height: 2.5rem;
-  margin-right: 0.75rem;
+  margin-right: 0.5rem;
 }
 
 .navbar__logo img {
@@ -164,9 +164,13 @@ code {
 }
 
 .navbar__title {
-  font-weight: 600;
-  font-size: 1.25rem;
-  color: #1a1d23 !important;
+  font-weight: 300;
+  font-size: 1.5rem;
+  color: #7a8599 !important;
+  letter-spacing: 0.5px;
+  margin-right: 2rem;
+  padding-right: 2rem;
+  border-right: 1px solid rgba(122, 133, 153, 0.2);
 }
 
 .navbar__item {
