@@ -37,6 +37,8 @@ const sidebars = {
         'commercebridge/core-bridge',
         'commercebridge/engagement',
         'commercebridge/workers',
+        'commercebridge/pricing-engine',
+        'commercebridge/fulfillment-engine',
       ],
     },
     {
