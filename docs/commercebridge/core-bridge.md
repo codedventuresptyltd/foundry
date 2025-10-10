@@ -1,423 +1,366 @@
 ---
-sidebar_position: 4
-title: Core Bridge
+sidebar_position: 5
+title: Core Bridge API
 ---
 
-# Core Bridge
+# Core Bridge API
+**Reference:** Foundational functions available in the base Bridge implementation.
 
-**Foundational Functions and Patterns**
+## What It Provides
 
-The Core Bridge provides the foundational functions that all ecosystem-specific bridges extend. It contains no tenant-specific integrations, only the essential operations for orchestrating commerce.
+The Core Bridge is the base class that all ecosystem-specific bridges extend. It provides essential commerce operations without any tenant-specific integrations.
 
----
+**Philosophy:** The core provides **patterns and infrastructure**, not integrations. You extend it to add your external systems and business logic.
 
-## Design Philosophy
-
-The Core Bridge is intentionally minimal and focused:
-
-- **No external integrations** — Twilio, ERPs, payment gateways, etc. are added by extending
-- **Pure orchestration** — State management, queue coordination, and business logic
-- **Multi-tenant ready** — Built for isolation and tenant-specific configuration
-- **Extensible** — Designed to be inherited and augmented
-
----
-
-## Core Functions
+## Function Categories
 
 ### Engagement Management
 
-Create and manage the full lifecycle of commerce engagements.
+Lifecycle operations for commerce conversations.
 
-```typescript
-// Create a new engagement
-const engagement = await bridge.createEngagement({
-  customerId: 'customer-123',
-  type: 'order',
-  tenantId: 'acme-corp'
-});
+```ts
+// Create new engagement
+createEngagement(params: EngagementParams): Promise<Engagement>
 
 // Retrieve engagement
-const engagement = await bridge.getEngagement(engagementId);
+getEngagement(id: string): Promise<Engagement>
 
 // Update engagement state
-await bridge.updateEngagement(engagementId, {
-  status: 'processing',
-  lineItems: updatedItems
-});
+updateEngagement(id: string, updates: Partial<Engagement>): Promise<Engagement>
 
-// Finalize engagement
-await bridge.finalizeEngagement(engagementId);
+// Finalize and close
+finalizeEngagement(id: string): Promise<void>
+
+// Get history/audit trail
+getEngagementHistory(id: string): Promise<EngagementEvent[]>
 ```
 
-#### Methods
+**Example usage:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `createEngagement()` | `EngagementParams` | `Engagement` | Creates new engagement |
-| `getEngagement()` | `engagementId: string` | `Engagement` | Retrieves engagement by ID |
-| `updateEngagement()` | `engagementId, updates` | `Engagement` | Updates engagement state |
-| `finalizeEngagement()` | `engagementId: string` | `void` | Marks engagement complete |
-| `getEngagementHistory()` | `engagementId: string` | `EngagementEvent[]` | Returns audit trail |
+```ts
+const engagement = await bridge.createEngagement({
+  customerId: 'customer-123',
+  type: 'order'
+})
+
+await bridge.updateEngagement(engagement.id, {
+  status: 'processing'
+})
+```
 
 ---
 
-### Pricing
+### Pricing Operations
 
-Calculate prices with sophisticated multi-stage modifiers.
+Price calculation with multi-stage modifiers.
 
-```typescript
-// Calculate price with context
-const pricing = await bridge.calculatePrice({
-  productId: 'prod-123',
-  quantity: 100,
-  customerId: 'customer-123',
-  deliveryZone: 'US-MIDWEST'
-});
+```ts
+// Calculate final price
+calculatePrice(context: PricingContext): Promise<PricingResult>
 
-// Apply price modifiers
-const finalPrice = await bridge.applyPriceModifiers(
-  basePrice,
-  [
-    { type: 'volume-discount', value: 0.15 },
-    { type: 'zone-upcharge', value: 0.05 }
-  ]
-);
+// Apply modifier chain
+applyPriceModifiers(base: number, modifiers: Modifier[]): Promise<number>
 
 // Get customer-specific pricing
-const customerPrice = await bridge.getCustomerPricing(
-  'customer-123',
-  'prod-123'
-);
+getCustomerPricing(customerId: string, productId: string): Promise<CustomerPrice>
+
+// Get historical price
+getPriceSnapshot(productId: string, date: Date): Promise<PriceSnapshot>
 ```
 
-#### Methods
+**Example usage:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `calculatePrice()` | `PricingContext` | `PricingResult` | Calculates final price |
-| `applyPriceModifiers()` | `basePrice, modifiers[]` | `number` | Applies modifier chain |
-| `getCustomerPricing()` | `customerId, productId` | `CustomerPrice` | Gets customer rates |
-| `getPriceHistory()` | `productId, dateRange` | `PriceSnapshot[]` | Historical pricing |
-| `cachePrice()` | `key, price, ttl` | `void` | Cache price result |
+```ts
+const pricing = await bridge.calculatePrice({
+  productId: 'product-456',
+  quantity: 100,
+  customerId: 'customer-123',
+  deliveryZone: 'midwest'
+})
+
+console.log(pricing.finalPrice) // After all modifiers
+console.log(pricing.modifiers)  // Breakdown of adjustments
+```
 
 ---
 
-### Fulfillment
+### Fulfillment Operations
 
-Orchestrate inventory allocation and delivery optimization.
+Inventory and delivery management.
 
-```typescript
-// Allocate inventory for engagement
+```ts
+// Allocate inventory
+allocateInventory(engagementId: string, items: LineItem[]): Promise<AllocationResult>
+
+// Check availability
+checkAvailability(query: AvailabilityQuery): Promise<AvailabilityResult>
+
+// Optimize allocation
+optimizeFulfillment(engagementId: string): Promise<FulfillmentPlan>
+
+// Release reservation
+releaseInventory(reservationId: string): Promise<void>
+
+// Get warehouses by zone
+getWarehousesByZone(zone: string): Promise<Warehouse[]>
+```
+
+**Example usage:**
+
+```ts
 const allocation = await bridge.allocateInventory(
-  engagementId,
+  'engagement-123',
   lineItems
-);
+)
 
-// Check availability by zone
-const availability = await bridge.checkAvailability({
-  productId: 'prod-123',
-  quantity: 50,
-  deliveryZone: 'US-MIDWEST'
-});
-
-// Optimize fulfillment across warehouses
-const optimized = await bridge.optimizeFulfillment(engagement);
+if (!allocation.success) {
+  // Handle insufficient inventory
+}
 ```
-
-#### Methods
-
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `allocateInventory()` | `engagementId, lineItems[]` | `AllocationResult` | Reserves inventory |
-| `checkAvailability()` | `AvailabilityQuery` | `AvailabilityResult` | Checks stock levels |
-| `optimizeFulfillment()` | `engagement` | `FulfillmentPlan` | Multi-warehouse optimization |
-| `releaseInventory()` | `allocationId` | `void` | Releases reserved stock |
-| `getWarehousesByZone()` | `deliveryZone` | `Warehouse[]` | Zone-filtered warehouses |
 
 ---
 
-### State Management
+### Cache Operations
 
-Manage distributed state with Redis caching and MongoDB persistence.
+Distributed caching for performance.
 
-```typescript
-// Cache engagement state
-await bridge.cacheEngagement(engagement, {
-  ttl: 3600 // 1 hour
-});
+```ts
+// Store in cache
+cacheData(key: string, value: unknown, ttl?: number): Promise<void>
 
 // Retrieve from cache
-const cached = await bridge.getFromCache('engagement:123');
+getFromCache(key: string): Promise<unknown>
 
-// Invalidate cache
-await bridge.invalidateCache('engagement:123');
+// Invalidate single key
+invalidateCache(key: string): Promise<void>
 
-// Batch invalidation
-await bridge.invalidateCachePattern('engagement:*');
+// Invalidate by pattern
+invalidateCachePattern(pattern: string): Promise<number>
+
+// Pre-warm cache
+warmCache(keys: string[]): Promise<void>
 ```
 
-#### Methods
+**Example usage:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `cacheEngagement()` | `engagement, options` | `void` | Cache engagement state |
-| `getFromCache()` | `key: string` | `any` | Retrieve cached value |
-| `invalidateCache()` | `key: string` | `void` | Remove cache entry |
-| `invalidateCachePattern()` | `pattern: string` | `number` | Bulk invalidation |
-| `warmCache()` | `keys: string[]` | `void` | Preload cache entries |
+```ts
+// Cache engagement
+await bridge.cacheData(
+  `engagement:${id}`,
+  engagement,
+  3600 // 1 hour TTL
+)
+
+// Invalidate on update
+await bridge.invalidateCache(`engagement:${id}`)
+```
 
 ---
 
 ### Queue Operations
 
-Publish and consume messages for asynchronous worker communication.
+Message queue for worker coordination.
 
-```typescript
-// Publish message to queue
-await bridge.publishToQueue('order-processing', {
-  type: 'order.created',
-  engagementId: 'eng-123',
-  timestamp: Date.now()
-});
+```ts
+// Publish job card
+publishTask(queue: string, job: JobCard): Promise<void>
 
-// Consume from queue
-await bridge.consumeFromQueue('order-processing', async (message) => {
-  // Process message
-  console.log('Processing:', message);
-});
+// Fetch jobs (used by workers)
+fetchJobsFromQueue(queue: string, batchSize: number): Promise<JobCard[]>
 
-// Publish with delay
-await bridge.publishToQueue('reminders', message, {
-  delay: 3600000 // 1 hour
-});
+// Acknowledge job completion
+acknowledgeJob(jobId: string): Promise<void>
+
+// Publish heartbeat
+publishHeartbeat(worker: WorkerStatus): Promise<void>
 ```
 
-#### Methods
+**Example usage:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `publishToQueue()` | `queue, message, options?` | `void` | Send message to queue |
-| `consumeFromQueue()` | `queue, handler` | `void` | Subscribe to queue |
-| `getQueueStats()` | `queue: string` | `QueueStats` | Queue metrics |
-| `purgeQueue()` | `queue: string` | `number` | Clear queue messages |
-| `createQueue()` | `name, options` | `Queue` | Initialize new queue |
+```ts
+await bridge.publishTask('order-processing', {
+  id: generateId(),
+  task: 'process-order',
+  payload: { orderId: 'order-123' },
+  priority: 5,
+  tenantId: 'tenant-alpha'
+})
+```
 
 ---
 
 ### Product Operations
 
-Query and manage product catalog data.
+Product catalog queries.
 
-```typescript
-// Get product details
-const product = await bridge.getProduct('prod-123');
-
-// Search products
-const results = await bridge.searchProducts({
-  query: 'steel plate',
-  filters: {
-    category: 'materials',
-    inStock: true
-  },
-  deliveryZone: 'US-MIDWEST'
-});
+```ts
+// Get product by ID
+getProduct(id: string): Promise<Product>
 
 // Get product by SKU
-const product = await bridge.getProductBySku('SKU-ABC-123');
+getProductBySku(sku: string): Promise<Product>
+
+// Search products
+searchProducts(query: SearchQuery): Promise<SearchResult>
+
+// Get by category
+getProductsByCategory(category: string): Promise<Product[]>
 ```
-
-#### Methods
-
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `getProduct()` | `productId: string` | `Product` | Get product by ID |
-| `getProductBySku()` | `sku: string` | `Product` | Get product by SKU |
-| `searchProducts()` | `SearchQuery` | `SearchResult` | Full-text search |
-| `getProductsByCategory()` | `category: string` | `Product[]` | Category filter |
 
 ---
 
 ### Customer Operations
 
-Manage customer data and relationships.
+Customer data management.
 
-```typescript
+```ts
 // Get customer details
-const customer = await bridge.getCustomer('customer-123');
+getCustomer(id: string): Promise<Customer>
 
 // Get customer pricing rules
-const pricingRules = await bridge.getCustomerPricingRules('customer-123');
+getCustomerPricingRules(customerId: string): Promise<PricingRule[]>
 
 // Get delivery addresses
-const addresses = await bridge.getCustomerAddresses('customer-123');
+getCustomerAddresses(customerId: string): Promise<Address[]>
+
+// Get order history
+getCustomerHistory(customerId: string): Promise<Order[]>
 ```
-
-#### Methods
-
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `getCustomer()` | `customerId: string` | `Customer` | Get customer details |
-| `getCustomerPricingRules()` | `customerId: string` | `PricingRule[]` | Customer pricing |
-| `getCustomerAddresses()` | `customerId: string` | `Address[]` | Delivery addresses |
-| `getCustomerHistory()` | `customerId: string` | `Order[]` | Order history |
 
 ---
 
 ### Tenant Operations
 
-Multi-tenant configuration and isolation.
+Multi-tenant configuration.
 
-```typescript
+```ts
 // Get tenant configuration
-const config = await bridge.getTenantConfig('acme-corp');
+getTenantConfig(tenantId: string): Promise<TenantConfig>
 
-// Check tenant feature flags
-const hasFeature = await bridge.checkTenantFeature(
-  'acme-corp',
-  'advanced-pricing'
-);
+// Check feature flag
+checkTenantFeature(tenantId: string, feature: string): Promise<boolean>
 
-// Get tenant-specific settings
-const settings = await bridge.getTenantSettings('acme-corp');
+// Get tenant settings
+getTenantSettings(tenantId: string): Promise<Settings>
 ```
 
-#### Methods
+## Example: Complete Flow
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `getTenantConfig()` | `tenantId: string` | `TenantConfig` | Tenant configuration |
-| `checkTenantFeature()` | `tenantId, feature` | `boolean` | Feature flag check |
-| `getTenantSettings()` | `tenantId: string` | `Settings` | Tenant settings |
-| `updateTenantConfig()` | `tenantId, updates` | `TenantConfig` | Update config |
+```ts
+import { BaseBridge } from '@commercebridge/core'
 
----
+const bridge = new BaseBridge(config)
 
-## Configuration
+// 1. Create engagement
+const engagement = await bridge.createEngagement({
+  customerId: 'customer-123',
+  type: 'order',
+  lineItems: [
+    { productId: 'product-456', quantity: 100, uom: 'each' }
+  ]
+})
 
-The Core Bridge is initialized with configuration:
+// 2. Calculate pricing
+const pricing = await bridge.calculatePrice({
+  productId: 'product-456',
+  quantity: 100,
+  customerId: 'customer-123'
+})
 
-```typescript
-import { BaseBridge } from '@commercebridge/core';
+// 3. Check availability
+const availability = await bridge.checkAvailability({
+  productId: 'product-456',
+  quantity: 100,
+  deliveryZone: 'midwest'
+})
 
-const bridge = new BaseBridge({
-  // MongoDB connection
-  mongodb: {
-    uri: process.env.MONGODB_URI,
-    database: 'commercebridge'
-  },
-  
-  // Redis cache
-  redis: {
-    host: process.env.REDIS_HOST,
-    port: 6379
-  },
-  
-  // Queue (RabbitMQ/Kafka)
-  queue: {
-    type: 'rabbitmq',
-    url: process.env.RABBITMQ_URL
-  },
-  
-  // OpenSearch
-  search: {
-    node: process.env.OPENSEARCH_URL
-  },
-  
-  // Tenant context
-  tenantId: 'acme-corp'
-});
+// 4. Allocate inventory
+const allocation = await bridge.allocateInventory(
+  engagement.id,
+  engagement.lineItems
+)
+
+// 5. Update engagement
+await bridge.updateEngagement(engagement.id, {
+  status: 'processing',
+  pricing,
+  allocation
+})
+
+// 6. Publish async task
+await bridge.publishTask('order-confirmation', {
+  id: generateId(),
+  task: 'confirm-order',
+  payload: { engagementId: engagement.id },
+  tenantId: engagement.tenantId
+})
 ```
-
----
 
 ## Extension Pattern
 
-Users extend the Core Bridge to add their functionality:
+Extend the base Bridge to add your functionality:
 
-```typescript
-import { BaseBridge } from '@commercebridge/core';
+```ts
+import { BaseBridge } from '@commercebridge/core'
 
-export class MyEcosystemBridge extends BaseBridge {
-  // All core functions are inherited
-  // Add your custom functions:
+export class MyBridge extends BaseBridge {
+  // All core functions inherited automatically
   
+  // Add your custom functions
   async syncToErp(order: Order) {
     // Your ERP integration
   }
   
-  async sendSms(customerId: string, message: string) {
+  async sendNotification(customerId: string, template: string) {
     // Your messaging integration
   }
-}
-```
-
-See [Extending CommerceBridge →](/commercebridge/extending) for detailed extension patterns.
-
----
-
-## Type Definitions
-
-### Common Types
-
-```typescript
-interface Engagement {
-  id: string;
-  tenantId: string;
-  customerId: string;
-  type: 'quote' | 'order' | 'subscription';
-  status: 'draft' | 'active' | 'processing' | 'complete' | 'cancelled';
-  lineItems: LineItem[];
-  pricing: PricingResult;
-  fulfillment?: FulfillmentPlan;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface PricingResult {
-  basePrice: number;
-  modifiers: PriceModifier[];
-  finalPrice: number;
-  currency: string;
-}
-
-interface AllocationResult {
-  success: boolean;
-  allocations: {
-    warehouseId: string;
-    productId: string;
-    quantity: number;
-  }[];
-  reservationId: string;
-}
-```
-
----
-
-## Error Handling
-
-The Core Bridge throws typed errors:
-
-```typescript
-try {
-  await bridge.allocateInventory(engagementId, lineItems);
-} catch (error) {
-  if (error instanceof InsufficientInventoryError) {
-    // Handle out of stock
-  } else if (error instanceof InvalidEngagementError) {
-    // Handle invalid engagement
+  
+  async processPayment(amount: number, method: string) {
+    // Your payment integration
   }
 }
 ```
 
-### Error Types
+## Configuration
 
-- `InsufficientInventoryError` — Not enough stock
-- `InvalidEngagementError` — Engagement doesn't exist or invalid state
-- `PricingError` — Price calculation failed
-- `CacheError` — Cache operation failed
-- `QueueError` — Message queue operation failed
+```ts
+interface BridgeConfig {
+  // Data store connection
+  dataStore: {
+    uri: string
+    database: string
+  }
+  
+  // Cache connection
+  cache: {
+    host: string
+    port: number
+  }
+  
+  // Queue connection
+  queue: {
+    url: string
+  }
+  
+  // Search engine
+  search: {
+    url: string
+  }
+  
+  // Tenant context
+  tenantId: string
+  
+  // Custom config (for your extensions)
+  custom?: Record<string, unknown>
+}
+```
+
+## IP Safety
+
+This documentation describes:
+- **Public:** Function signatures, interfaces, usage patterns
+- **Private (not shown):** Implementation details, database queries, cache structures, queue topics
 
 ---
 
-**The Core Bridge provides the foundation. You bring the integrations.**
-
+**Core Bridge: The foundation you extend.**
