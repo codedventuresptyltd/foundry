@@ -10,7 +10,7 @@ title: CommerceBridge
 
 CommerceBridge is a distributed commerce orchestration framework built for complex B2B operations. It models the entire commerce journey as an **engagement** rather than isolated transactions.
 
-The framework consists of a central orchestration layer (the Bridge) that coordinates stateless processing units (Workers) to handle sophisticated commerce workflows. It's designed for multi-tenant environments where each tenant extends the base system with their own business logic and integrations.
+The framework consists of a central abstraction layer (the Bridge) that provides a common API interface between stateless processing units (Workers) and integrations. It's designed for multi-tenant environments where each tenant extends the base system with their own business logic and integrations.
 
 Unlike cart-focused e-commerce platforms, CommerceBridge handles complex B2B scenarios: configurable products, sophisticated pricing rules, multi-warehouse fulfillment, and long-running commerce conversations.
 
@@ -31,7 +31,7 @@ Traditional commerce systems struggle with modern B2B requirements. CommerceBrid
 
 | Term | Meaning |
 |------|---------|
-| **Bridge** | Central orchestration layer managing state and coordination |
+| **Bridge** | Central abstraction layer providing common API interface between Workers and integrations |
 | **Engagement** | Lifecycle container for the full commerce conversation |
 | **Worker** | Stateless processor executing discrete business tasks |
 | **Job Card** | Unit of work delivered to workers |
@@ -55,8 +55,7 @@ flowchart LR
 **Request flow:**
 1. Client (UI) makes request
 2. API layer receives and validates
-3. Bridge orchestrates operation
-4. Workers process async tasks
+3. Workers process async tasks
 5. Workers use Bridge for all operations
 6. Bridge coordinates with external systems
 7. Results flow back to client
@@ -102,11 +101,12 @@ flowchart TB
 ## Key Components
 
 ### The Bridge
-Central orchestration layer that:
-- Manages all system state
-- Provides core commerce functions
-- Coordinates distributed workers
-- Enforces multi-tenant isolation
+Central abstraction layer that:
+- Provides common API interface between Workers and integrations
+- Centralizes shared integration logic (payments, messaging, shipping)
+- Manages multi-tenant data isolation
+- Offers core commerce functions and state management
+- Enforces access control and Role Based Access
 
 [Learn about The Bridge →](/commercebridge/bridge)
 
@@ -146,17 +146,6 @@ Allocation system that:
 
 [Learn about Fulfillment Engine →](/commercebridge/fulfillment-engine)
 
-## Public vs Private
-
-| Public (Documented Here) | Private (Not Exposed) |
-|--------------------------|----------------------|
-| Core concepts and patterns | Implementation details |
-| Base Bridge function signatures | Database schemas |
-| Worker patterns and lifecycle | Queue topic names |
-| Extension interfaces | Infrastructure specifics |
-| Generic pseudo-code examples | Tenant-specific logic |
-| Architectural diagrams | Production configurations |
-
 ## Extension Model
 
 CommerceBridge is designed to be **extended, not modified**:
@@ -187,28 +176,6 @@ export class MyWorker extends BaseWorker {
     // Your business task
   }
 }
-```
-
-### Configure Pricing
-
-Define your price modifiers and rules:
-
-```ts
-const modifiers = [
-  { type: 'volume-discount', value: 0.15, operation: 'multiply' },
-  { type: 'zone-upcharge', value: 5, operation: 'add' }
-]
-```
-
-### Define Zones
-
-Set up your delivery network:
-
-```ts
-const zones = [
-  { id: 'midwest', warehouses: ['warehouse-a'], deliveryDays: 2 },
-  { id: 'southwest', warehouses: ['warehouse-b'], deliveryDays: 3 }
-]
 ```
 
 ## Next

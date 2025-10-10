@@ -4,7 +4,7 @@ title: The Bridge
 ---
 
 # The Bridge
-Central orchestration layer that manages state, coordinates workers, and provides the foundation for all commerce operations.
+Central abstraction layer that provides a common API interface between Workers and integrations, managing state and providing the foundation for all commerce operations.
 
 ## Responsibilities
 
@@ -14,10 +14,10 @@ Central orchestration layer that manages state, coordinates workers, and provide
 - Coordinates distributed caching layer
 - Ensures state consistency across workers
 
-### Orchestration
-- Routes operations to appropriate handlers
-- Coordinates multi-step workflows
-- Manages async task distribution to workers
+### API Interface
+- Provides common API interface for all commerce operations
+- Abstracts integration complexity from Workers
+- Manages data access patterns consistently
 - Ensures transactional consistency
 
 ### Integration Foundation

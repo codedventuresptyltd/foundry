@@ -299,6 +299,18 @@ async myTask(job: JobCard): Promise<void> {
 }
 ```
 
+## MeshWorker Pattern
+
+For simpler worker implementations, you can extend MeshWorker:
+
+```ts
+export class MyWorker extends MeshWorker {
+  async work(job: JobCard) {
+    // Your business task
+  }
+}
+```
+
 ## Accessing the Bridge
 
 Workers access all data and functions through the Bridge:

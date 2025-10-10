@@ -4,11 +4,11 @@ title: Touchpoint
 ---
 
 # Touchpoint Overview
-**Tagline:** Dynamic ordering experiences for trade and industry.
+**Tagline:** Dynamic ordering experiences
 
 ## What It Is
 
-Touchpoint is a modern UI framework for building B2B commerce experiences. It provides both customer-facing storefronts and admin management interfaces built on a shared component architecture.
+Touchpoint is a modern UI framework for building complex and multi-mode commerce experiences. It provides customer-facing storefronts, built on a shared component architecture and code-based extension framework.
 
 The framework uses a slot-based design where UI components dynamically adapt to context (product type, user role, tenant configuration). This allows a single codebase to power vastly different experiences across industries and use cases.
 
@@ -32,7 +32,6 @@ Generic e-commerce UIs don't work for B2B complexity. Touchpoint solves:
 |------|---------|
 | **Slot** | Component placeholder that renders based on context |
 | **Context** | Product, user, and tenant information driving rendering |
-| **Layer** | Admin or storefront experience type |
 | **Configuration** | Tenant-specific UI customization |
 
 ## High-Level Flow
@@ -51,16 +50,6 @@ flowchart LR
 
 ## Architecture Layers
 
-### Admin Layer
-
-Management interface for:
-- Product catalog configuration
-- Pricing rule setup
-- Delivery zone management  
-- Customer account management
-- Order processing
-- System configuration
-
 ### Storefront Layer
 
 Customer experience for:
@@ -75,9 +64,28 @@ Customer experience for:
 
 Both layers use the same:
 - Base component library
+- Extensible component framework for advanced customizations
 - Slot architecture
 - CommerceBridge integration
 - State management patterns
+
+### Slot-Based Rendering Engine
+
+The core rendering system that dynamically composes UI based on context:
+
+- **Context Analysis** — Evaluates product type, user role, and tenant configuration
+- **Component Selection** — Chooses appropriate components from the library
+- **Dynamic Composition** — Renders the optimal UI for the current context
+- **Real-time Updates** — Refreshes components when context changes
+
+### Abstracted Commerce Engagement Model
+
+Provides a unified interface to commerce operations:
+
+- **Engagement Abstraction** — Presents complex commerce workflows as simple operations
+- **Real-time Integration** — Connects directly to CommerceBridge for live data
+- **State Synchronization** — Keeps UI state in sync with backend commerce state
+- **Error Handling** — Provides consistent error states across all commerce operations
 
 ## Slot-Based Architecture
 
@@ -85,44 +93,39 @@ Both layers use the same:
 flowchart TB
     CONTEXT[Rendering Context] --> SLOT[Slot Placeholder]
     
-    SLOT --> TYPE{Product Type?}
-    TYPE -->|Configurable| CONFIG[Configuration Component]
-    TYPE -->|Simple| SIMPLE[Simple Product Component]
-    TYPE -->|Bundle| BUNDLE[Bundle Component]
+    SLOT --> VIEW{View Type?}
+    VIEW -->|Order Form| ORDER[Order Form View]
+    VIEW -->|Order View| DETAIL[Order Detail View]
     
-    SLOT --> ROLE{User Role?}
-    ROLE -->|Admin| ADMIN[Admin View]
-    ROLE -->|Customer| CUSTOMER[Customer View]
+    SLOT --> CONFIG{Slot Configuration?}
+    CONFIG -->|Data Items X| ITEMS_X[Display Data Items X]
+    CONFIG -->|Data Items Y| ITEMS_Y[Display Data Items Y]
 ```
 
 **Example:**
 
-Same slot, different renderings:
+Same slot, different data configurations without code changes:
 ```
-ProductDetailSlot + Admin + Configurable Product
-  → Configuration editor with pricing tools
+OrderLineItemSlot + Order Form View
+  → Configured to show: SKU, Quantity, Unit Price, Total
 
-ProductDetailSlot + Customer + Simple Product  
-  → Clean product display with buy button
-
-ProductDetailSlot + Customer + Configurable Product
-  → Guided configuration wizard
+OrderLineItemSlot + Order Detail View  
+  → Configured to show: SKU, Description, Quantity, Unit Price, Total, Tax, Discounts
 ```
 
-## Public vs Private
+The slot renders different data items based on configuration, not based on user role or product type.
 
-| Public (Documented Here) | Private (Not Exposed) |
-|--------------------------|----------------------|
-| Slot concept and patterns | Component implementations |
-| Integration patterns | Tenant-specific configurations |
-| Customization approach | UI state management details |
-| Generic examples | Actual tenant themes |
+## Common Model and Service Structure
 
-## Next
+Touchpoint uses a common model and service structure for managing the engagement. This means that custom business logic can hook into this common model and trigger custom interactions through the engagement data model.
 
-- [Slot-Based UI →](/touchpoint/slot-based-ui) — Component architecture
-- [Admin vs Storefront →](/touchpoint/admin-vs-storefront) — Layer differences
-- [CommerceBridge Integration →](/touchpoint/commercebridge-integration) — Data integration
+The engagement model serves as the central data structure that:
+- **Unifies Commerce State** — All commerce operations work through the same engagement data model
+- **Enables Custom Hooks** — Business logic can attach to engagement lifecycle events
+- **Supports Custom Interactions** — Custom UI components can trigger and respond to engagement changes
+- **Maintains Consistency** — All Touchpoint views operate on the same underlying engagement structure
+
+This architectural approach allows for sophisticated customizations while maintaining the benefits of a unified commerce experience across all Touchpoint interfaces.
 
 ---
 
