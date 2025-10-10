@@ -4,379 +4,205 @@ title: The Bridge
 ---
 
 # The Bridge
+Central orchestration layer that manages state, coordinates workers, and provides the foundation for all commerce operations.
 
-**Single, Common Service Layer**
+## Responsibilities
 
-The Bridge is the **single, common service layer** in CommerceBridge. It serves as the orchestration hub, state manager, and integration point for the entire commerce system.
+### State Management
+- Owns all persistent and cached state in the system
+- Manages engagement lifecycle state
+- Coordinates distributed caching layer
+- Ensures state consistency across workers
 
----
+### Orchestration
+- Routes operations to appropriate handlers
+- Coordinates multi-step workflows
+- Manages async task distribution to workers
+- Ensures transactional consistency
 
-## What the Bridge Is
+### Integration Foundation
+- Provides base functions for commerce operations
+- Extensible interface for custom integrations
+- Multi-tenant resource coordination
+- API gateway for experience layer
 
-The Bridge is a **foundational service layer** that provides:
+## Lifecycle
 
-### 1. Orchestration Hub
+### 1. Initialization
+Bridge initializes with configuration for:
+- Data storage connections
+- Cache layer connections
+- Message queue connections  
+- Search infrastructure
+- Tenant context
 
-The Bridge coordinates all commerce operations:
+### 2. Operation
+Bridge handles requests by:
+- Validating tenant context
+- Executing requested operation
+- Managing state changes
+- Publishing tasks to workers (if async)
+- Returning results
 
-- Routes requests to appropriate handlers
-- Manages workflow state across distributed workers
-- Coordinates multi-step processes
-- Ensures consistency across the system
+### 3. Extension
+Developers extend the base Bridge with custom functionality while inheriting core operations.
 
-### 2. State Manager
+## Architecture
 
-The Bridge owns all state in the system:
+```mermaid
+flowchart TB
+    API[Experience APIs]
+    BRIDGE[Bridge Core]
+    CACHE[(Cache Layer)]
+    STORE[(Data Store)]
+    SEARCH[(Search Engine)]
+    QUEUE[Message Queue]
+    WORKERS[Workers]
+    
+    API --> BRIDGE
+    BRIDGE --> CACHE
+    BRIDGE --> STORE
+    BRIDGE --> SEARCH
+    BRIDGE --> QUEUE
+    QUEUE --> WORKERS
+    WORKERS --> BRIDGE
+```
 
-- **Redis** — Hot caches, session state, engagement state
-- **MongoDB** — Persistent storage, historical data
-- **OpenSearch** — Full-text search, spatial queries, aggregations
+## Interfaces (Public-Safe)
 
-Workers are stateless. The Bridge maintains state.
+### Base Bridge Interface
 
-### 3. Integration Point
+```ts
+export interface Bridge {
+  // Engagement operations
+  createEngagement(params: EngagementParams): Promise<Engagement>
+  getEngagement(id: string): Promise<Engagement>
+  updateEngagement(id: string, updates: Partial<Engagement>): Promise<Engagement>
+  
+  // Pricing operations
+  calculatePrice(context: PricingContext): Promise<PricingResult>
+  applyPriceModifiers(base: number, modifiers: Modifier[]): Promise<number>
+  
+  // Fulfillment operations
+  allocateInventory(engagementId: string, items: LineItem[]): Promise<AllocationResult>
+  checkAvailability(query: AvailabilityQuery): Promise<AvailabilityResult>
+  
+  // State operations
+  cacheData(key: string, value: unknown, ttl?: number): Promise<void>
+  getFromCache(key: string): Promise<unknown>
+  invalidateCache(pattern: string): Promise<void>
+  
+  // Queue operations
+  publishTask(queue: string, task: JobCard): Promise<void>
+  
+  // Multi-tenant operations
+  getTenantConfig(tenantId: string): Promise<TenantConfig>
+}
+```
 
-The Bridge is where integrations live:
+## Example (Pseudo)
 
-- **For users:** Extend the Bridge to add your integrations (ERP, messaging, payments)
-- **For workers:** Access all data and integrations through the Bridge
-- **For APIs:** Bridge provides the backend for experience layer endpoints
+### Using the Base Bridge
 
-### 4. Multi-Tenant Coordinator
+```ts
+import { BaseBridge } from '@commercebridge/core'
 
-The Bridge enforces tenant isolation:
+const bridge = new BaseBridge({
+  dataStore: { /* connection config */ },
+  cache: { /* connection config */ },
+  queue: { /* connection config */ },
+  tenantId: 'tenant-alpha'
+})
 
-- All operations are tenant-scoped
-- Data is isolated per tenant
-- Configuration is tenant-specific
-- No cross-tenant data leakage
-
----
-
-## What the Bridge Does
-
-### Engagement Lifecycle Management
-
-The Bridge manages the full lifecycle of commerce engagements:
-
-```typescript
-// Create engagement
+// Create an engagement
 const engagement = await bridge.createEngagement({
   customerId: 'customer-123',
-  type: 'order',
-  tenantId: 'acme-corp'
-});
+  type: 'order'
+})
 
-// Track throughout lifecycle
-await bridge.updateEngagement(engagement.id, { status: 'processing' });
-await bridge.updateEngagement(engagement.id, { status: 'confirmed' });
-await bridge.finalizeEngagement(engagement.id);
-```
-
-### Price Calculation
-
-The Bridge handles sophisticated pricing logic:
-
-- Multi-stage modifier application
-- Customer-specific pricing rules
-- Delivery zone adjustments
-- Volume break calculations
-- Price caching and invalidation
-
-```typescript
+// Calculate pricing
 const pricing = await bridge.calculatePrice({
-  productId: 'prod-123',
+  productId: 'product-456',
   quantity: 100,
-  customerId: 'customer-456',
-  deliveryZone: 'US-MIDWEST'
-});
-```
+  customerId: 'customer-123'
+})
 
-### Inventory Allocation
-
-The Bridge orchestrates inventory across multiple warehouses:
-
-- Real-time availability checking
-- Multi-warehouse allocation
-- Delivery zone optimization
-- Split shipment handling
-- Reservation management
-
-```typescript
+// Allocate inventory
 const allocation = await bridge.allocateInventory(
-  engagementId,
-  lineItems
-);
+  engagement.id,
+  engagement.lineItems
+)
 ```
 
-### State Caching
+### Extending the Bridge
 
-The Bridge provides intelligent caching:
+```ts
+import { BaseBridge } from '@commercebridge/core'
 
-- Hot data in Redis
-- Cache invalidation on updates
-- Automatic cache warming
-- Pattern-based bulk invalidation
-
-```typescript
-await bridge.cacheEngagement(engagement);
-await bridge.invalidateCache(`engagement:${id}`);
-```
-
-### Queue Management
-
-The Bridge manages message queues for worker communication:
-
-- Publish tasks to worker queues
-- Handle queue priorities
-- Manage delayed jobs
-- Track queue metrics
-
-```typescript
-await bridge.publishToQueue('order-processing', jobCard);
-```
-
----
-
-## Key Principle
-
-> **All shared, reusable integrations must live in the Bridge.**
-
-This keeps the architecture clean and prevents integration logic from being scattered across workers.
-
-**Important:** The base Bridge does NOT include tenant-specific or external system integrations. These must be added by extending the Bridge for your ecosystem.
-
----
-
-## Core Functions Available
-
-The base Bridge provides these foundational functions that all extended bridges inherit:
-
-- **Engagement Management** — Create, read, update, finalize engagements
-- **Pricing** — Calculate prices, apply modifiers, customer pricing
-- **Fulfillment** — Allocate inventory, check availability, optimize
-- **State Management** — Cache operations, invalidation, retrieval
-- **Queue Operations** — Publish, consume, queue management
-- **Product Operations** — Get products, search, SKU lookup
-- **Customer Operations** — Get customers, pricing rules, addresses
-- **Tenant Operations** — Config, feature flags, settings
-
-See [Core Bridge API Reference →](/commercebridge/core-bridge) for complete function documentation with parameters, return types, and examples.
-
----
-
-## Extending the Bridge
-
-Users extend the base Bridge model to add their own functionality:
-
-```typescript
-// Extend the base Bridge for your tenant/ecosystem
-import { BaseBridge } from '@commercebridge/core';
-
-export class MyEcosystemBridge extends BaseBridge {
-  // Add your own functions
-  async integrateWithExternalSystem(data: any) {
-    // Your custom integration logic
+export class CustomBridge extends BaseBridge {
+  // Add your integrations
+  async syncToExternalSystem(data: unknown) {
+    // Your integration logic
   }
   
-  // Add tenant-specific business logic
-  async processCustomWorkflow(engagement: Engagement) {
-    // Your workflow implementation
+  // Add custom business logic
+  async applyCustomPricingRules(engagement: Engagement) {
+    // Your pricing logic
   }
 }
 ```
 
-### Extension Examples
+## Extension Points
 
-#### External System Integration
+### 1. Custom Integrations
 
-```typescript
-export class AcmeCommerceBridge extends BaseBridge {
-  private erpClient: AcmeErpClient;
-  
-  constructor(config: BridgeConfig) {
-    super(config);
-    this.erpClient = new AcmeErpClient(config.erpUrl);
-  }
-  
-  // Add ERP integration
-  async syncOrderToErp(order: Order) {
-    const erpOrder = this.transformToErpFormat(order);
-    return await this.erpClient.createOrder(erpOrder);
-  }
-  
-  // Add inventory sync
-  async syncInventoryFromErp() {
-    const erpInventory = await this.erpClient.getInventory();
-    return await this.updateInventoryCache(erpInventory);
-  }
-}
-```
+Extend the Bridge to add external system integrations:
+- ERP systems
+- Messaging services
+- Payment gateways
+- Shipping carriers
+- Analytics platforms
 
-#### Messaging Integration
+### 2. Custom Business Logic
 
-```typescript
-export class AcmeCommerceBridge extends BaseBridge {
-  private twilioClient: TwilioClient;
-  private mailgunClient: MailgunClient;
-  
-  // Add SMS notifications
-  async sendSmsNotification(customerId: string, message: string) {
-    const customer = await this.getCustomer(customerId);
-    return await this.twilioClient.send(customer.phone, message);
-  }
-  
-  // Add email notifications
-  async sendEmailNotification(customerId: string, template: string, data: any) {
-    const customer = await this.getCustomer(customerId);
-    return await this.mailgunClient.sendTemplate(customer.email, template, data);
-  }
-}
-```
+Add tenant-specific business rules:
+- Pricing calculations
+- Approval workflows
+- Inventory policies
+- Customer validation
 
-#### Custom Business Logic
+### 3. Custom Data Operations
 
-```typescript
-export class AcmeCommerceBridge extends BaseBridge {
-  // Add custom discount logic
-  async applyAcmeDiscounts(engagement: Engagement) {
-    // Your specific discount calculation
-    const customerTier = await this.getCustomerTier(engagement.customerId);
-    const discountRate = this.calculateTierDiscount(customerTier);
-    
-    return this.applyPriceModifiers(engagement.pricing.basePrice, [
-      { type: 'tier-discount', value: discountRate }
-    ]);
-  }
-  
-  // Add custom workflow
-  async processAcmeApprovalWorkflow(engagement: Engagement) {
-    if (engagement.pricing.finalPrice > 10000) {
-      await this.publishToQueue('approvals', {
-        type: 'approval.required',
-        engagementId: engagement.id
-      });
-    }
-  }
-}
-```
+Extend data handling:
+- Additional caching strategies
+- Custom search queries
+- Data transformations
+- Reporting aggregations
 
----
+## Do / Don't
 
-## Using Extended Bridge
+### ✅ Do
 
-### In Workers
+- Extend the base Bridge for your needs
+- Keep all integrations in the Bridge (don't scatter across workers)
+- Use dependency injection for external clients
+- Maintain multi-tenant awareness in all operations
+- Document your custom functions
 
-Workers use your extended Bridge implementation:
+### ❌ Don't
 
-```typescript
-export const orderProcessorWorker = async (message: OrderMessage) => {
-  // Instantiate your extended Bridge
-  const bridge = new AcmeCommerceBridge(config);
-  
-  // Use core functions (inherited from BaseBridge)
-  const engagement = await bridge.getEngagement(message.engagementId);
-  await bridge.allocateInventory(engagement.id, engagement.lineItems);
-  
-  // Use your custom functions
-  await bridge.syncOrderToErp(engagement.order);
-  await bridge.sendSmsNotification(
-    engagement.customerId, 
-    'Your order has been confirmed!'
-  );
-};
-```
+- Modify the base Bridge directly
+- Create side-services for integrations
+- Bypass the Bridge from workers
+- Hardcode credentials or tenant-specific values
+- Mix tenant logic in base implementations
 
-### In Experience Layer
+## IP Safety
 
-API endpoints use your extended Bridge:
-
-```typescript
-export const createOrderEndpoint = async (req: Request, res: Response) => {
-  const bridge = new AcmeCommerceBridge(config);
-  
-  // Create engagement (core function)
-  const engagement = await bridge.createEngagement(req.body);
-  
-  // Apply custom business logic
-  await bridge.applyAcmeDiscounts(engagement);
-  await bridge.processAcmeApprovalWorkflow(engagement);
-  
-  res.json(engagement);
-};
-```
-
----
-
-## Extension Pattern Benefits
-
-### Complete Flexibility
-
-- Add any external system integration
-- Implement tenant-specific business logic
-- Customize workflows and validations
-- Integrate with bespoke systems
-
-### Maintain Core Functionality
-
-- Inherit all base Bridge functions
-- Leverage built-in caching and state management
-- Use queue operations and orchestration
-- Benefit from multi-tenant architecture
-
-### Clean Architecture
-
-- No scattered integration code
-- Single source of truth for business logic
-- Easy to test and maintain
-- Clear separation of concerns
-
----
-
-## Configuration
-
-Your extended Bridge receives configuration at initialization:
-
-```typescript
-const bridge = new AcmeCommerceBridge({
-  // Core Bridge config
-  mongodb: { uri: process.env.MONGODB_URI },
-  redis: { host: process.env.REDIS_HOST },
-  queue: { url: process.env.RABBITMQ_URL },
-  
-  // Your custom config
-  erpUrl: process.env.ACME_ERP_URL,
-  erpApiKey: process.env.ACME_ERP_KEY,
-  twilioAccountSid: process.env.TWILIO_SID,
-  twilioAuthToken: process.env.TWILIO_TOKEN,
-  mailgunApiKey: process.env.MAILGUN_KEY,
-  
-  // Tenant context
-  tenantId: 'acme-corp'
-});
-```
-
----
-
-## Best Practices
-
-### Do:
-
-✅ Extend the base Bridge for your ecosystem  
-✅ Add external system integrations in your extended Bridge  
-✅ Keep integrations multi-tenant aware  
-✅ Use dependency injection for external clients  
-✅ Document your custom functions  
-
-### Don't:
-
-❌ Modify the base Bridge directly  
-❌ Create side-services for integrations  
-❌ Mix tenant-specific logic in base Bridge  
-❌ Hardcode credentials in your Bridge  
-❌ Bypass the Bridge in Workers  
+This documentation describes:
+- **Public:** Interfaces, patterns, extension points
+- **Private (not shown):** Specific schemas, infrastructure details, tenant configurations
 
 ---
 
 **The Bridge provides the foundation. You bring the integrations.**
-

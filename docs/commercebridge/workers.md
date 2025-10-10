@@ -4,659 +4,396 @@ title: Workers
 ---
 
 # Workers
+Stateless, autonomous processors that execute discrete business tasks.
 
-**Stateless, Replaceable Processing Engines**
+## Responsibilities
 
-Workers are the execution layer of CommerceBridge. They are autonomous, stateless processors that consume tasks, execute business logic, and scale elastically based on workload.
+### Task Execution
+- Process job cards from message queues
+- Execute single, focused business operations
+- Use Bridge for all data and state access
+- Report results and metrics
 
----
+### Autonomous Operation
+- Self-manage workload consumption
+- Handle errors and retries independently
+- Scale based on queue depth
+- Exit gracefully when replaced
 
-## What Workers Are
+### Stateless Processing
+- Maintain no persistent state between jobs
+- Fetch all required data from Bridge
+- Complete each job independently
+- Can be stopped/started without impact
 
-Workers are:
+## Lifecycle
 
-- **Stateless** — No persistent state between executions
-- **Replaceable** — Can be stopped and started without system impact
-- **Autonomous** — Self-contained execution units
-- **Elastic** — Scale up or down based on workload
-- **Specialized** — Each worker handles a single business task
+### 1. Startup
+- Connect to infrastructure (via Bridge)
+- Register with worker registry
+- Send initial heartbeat
+- Begin consumption cycle
 
----
+### 2. Processing Cycle
+Continuous loop of:
+```
+beat → getJobs → process → optimize → repeat
+```
 
-## What Workers Do
-
-Workers execute specific business tasks by:
-
-1. **Connecting to the system** — Announcing their presence (heartbeat)
-2. **Receiving work** — Getting job cards from the queue
-3. **Processing tasks** — Executing business logic using the Bridge
-4. **Optimizing** — Cleaning up, reporting metrics
-5. **Repeating** — Continuous cycle
-
----
+### 3. Graceful Shutdown
+- Stop accepting new jobs
+- Complete current jobs
+- Send final heartbeat
+- Close connections cleanly
 
 ## The Worker Loop
 
-At a high level, every worker follows this cycle:
-
+```mermaid
+flowchart LR
+    A[Beat] --> B[Get Jobs]
+    B --> C[Process Jobs]
+    C --> D[Optimize]
+    D --> A
 ```
-beat → getJobs → work loop → optimise → beat
-```
 
-### 1. Beat (Heartbeat)
+### Beat (Heartbeat)
+Worker announces its presence and health:
 
-Worker announces its presence to the system:
-
-```typescript
+```ts
 async beat() {
-  // Announce worker is alive and ready
-  await this.bridge.publishToQueue('worker-registry', {
-    workerId: this.workerId,
-    type: this.workerType,
+  await this.bridge.publishHeartbeat({
+    workerId: this.id,
+    workerType: this.type,
     status: 'active',
     timestamp: Date.now()
-  });
+  })
 }
 ```
 
-### 2. Get Jobs
+### Get Jobs
+Worker fetches available work from its queue:
 
-Worker retrieves job cards from its queue:
-
-```typescript
+```ts
 async getJobs() {
-  // Fetch available job cards
-  const jobs = await this.bridge.consumeFromQueue(
+  return await this.bridge.fetchJobsFromQueue(
     this.queueName,
-    this.config.batchSize
-  );
-  return jobs;
+    this.batchSize
+  )
 }
 ```
 
-### 3. Work Loop
+### Process Jobs
+Worker executes each job:
 
-Worker processes each job card:
-
-```typescript
-async workLoop(jobs: JobCard[]) {
-  for (const job of jobs) {
-    await this.processJob(job);
-  }
+```ts
+for (const job of jobs) {
+  await this.work(job)
 }
 ```
 
-### 4. Optimise
+### Optimize
+Worker performs housekeeping:
 
-Worker cleans up and reports metrics:
-
-```typescript
-async optimise() {
-  // Clear local caches
-  this.clearLocalCache();
-  
-  // Report metrics
-  await this.reportMetrics();
-  
-  // Check for updates/shutdown signals
-  await this.checkSystemMessages();
+```ts
+async optimize() {
+  this.clearLocalCache()
+  await this.reportMetrics()
+  await this.checkForShutdownSignal()
 }
 ```
 
-Then the cycle repeats: **beat → getJobs → work loop → optimise**
+## Worker Pattern
 
----
+### Core Principle: Single Responsibility
 
-## Core Principles
+Each worker handles **one specific business task**.
 
-### Single Business Task Per Worker
-
-Each worker should handle **one specific business task**:
-
-✅ **Good Examples:**
+**Good examples:**
 - `order-processor` — Processes new orders
-- `inventory-allocator` — Allocates inventory
-- `price-calculator` — Calculates prices
 - `notification-sender` — Sends customer notifications
+- `inventory-sync` — Syncs inventory levels
+- `price-calculator` — Pre-calculates common prices
 
-❌ **Bad Examples:**
-- `order-handler` — Too broad (process + allocate + notify)
-- `multi-purpose-worker` — Violates single responsibility
+**Bad examples:**
+- `order-handler` — Too broad (multiple responsibilities)
+- `general-processor` — Violates single responsibility
+- `kitchen-sink-worker` — Unmaintainable
 
 ### Isolation
 
 Workers operate independently:
-
-- No shared state between workers
+- No shared state with other workers
 - No direct worker-to-worker communication
-- All communication through queues
-- Each worker can fail without affecting others
+- All coordination through message queues
+- Independent scaling and deployment
 
 ### Independence
 
 Workers are self-sufficient:
-
-- Contain all logic needed for their task
-- Make decisions autonomously
-- Don't depend on other workers being available
-- Can be deployed and scaled independently
-
----
+- Contain all logic for their specific task
+- Fetch all needed data from Bridge
+- Make autonomous decisions
+- Can fail without affecting other workers
 
 ## Building a Worker
 
-### Step 1: Import the Core Models
+### Step 1: Import Core Models
 
-```typescript
-import { BaseWorker, JobCard, WorkerConfig } from '@commercebridge/core';
-import { MyCustomBridge } from './my-bridge';
+```ts
+import { BaseWorker, JobCard, WorkerConfig } from '@commercebridge/core'
+import { CustomBridge } from '../bridge/custom-bridge'
 ```
 
-### Step 2: Define Your Worker Class
+### Step 2: Define Worker Class
 
-```typescript
-export class OrderProcessorWorker extends BaseWorker {
-  private bridge: MyCustomBridge;
+```ts
+export class OrderProcessor extends BaseWorker {
+  private bridge: CustomBridge
   
   constructor(config: WorkerConfig) {
-    super(config);
-    this.bridge = new MyCustomBridge(config.bridge);
+    super(config)
+    this.bridge = new CustomBridge(config.bridge)
   }
-}
-```
-
-### Step 3: Implement the Work Function
-
-The `work()` function is the main control loop:
-
-```typescript
-async work(jobCard: JobCard): Promise<void> {
-  // The core provides error handling, logging, and retry logic
-  // Your job is to define the business logic
   
-  switch (jobCard.task) {
-    case 'process-order':
-      await this.processOrder(jobCard);
-      break;
-    case 'confirm-order':
-      await this.confirmOrder(jobCard);
-      break;
-    default:
-      throw new Error(`Unknown task: ${jobCard.task}`);
+  async work(job: JobCard): Promise<void> {
+    // Route to task handlers
+    switch (job.task) {
+      case 'process-order':
+        return await this.processOrder(job)
+      case 'confirm-order':
+        return await this.confirmOrder(job)
+      default:
+        throw new Error(`Unknown task: ${job.task}`)
+    }
   }
 }
 ```
 
-### Step 4: Define Task Functions
+### Step 3: Implement Task Functions
 
-Each task function handles one specific operation:
+Each task function follows this pattern:
 
-```typescript
-async processOrder(jobCard: JobCard): Promise<void> {
-  return await this.executeTask(jobCard, async () => {
-    // Task logic wrapped in executeTask for error handling
-    const { orderId } = jobCard.payload;
+```ts
+async processOrder(job: JobCard): Promise<void> {
+  return await this.executeTask(job, async () => {
+    // 1. Extract payload
+    const { orderId } = job.payload
     
-    // Use the bridge to access core functions
-    const engagement = await this.bridge.getEngagement(orderId);
+    // 2. Access Bridge
+    const engagement = await this.bridge.getEngagement(orderId)
     
-    // Allocate inventory
-    await this.bridge.allocateInventory(
+    // 3. Execute business logic
+    const allocation = await this.bridge.allocateInventory(
       engagement.id,
       engagement.lineItems
-    );
+    )
     
-    // Calculate pricing
-    const pricing = await this.bridge.calculatePrice(
-      engagement.lineItems
-    );
-    
-    // Update engagement
+    // 4. Update state
     await this.bridge.updateEngagement(engagement.id, {
       status: 'processing',
-      pricing
-    });
+      allocation
+    })
     
-    // Use custom bridge functions
-    await this.bridge.syncToErp(engagement);
-    await this.bridge.sendNotification(
-      engagement.customerId,
-      'order-confirmed'
-    );
-  });
+    // 5. Trigger next steps (if needed)
+    await this.bridge.publishTask('order-confirmation', {
+      task: 'confirm-order',
+      payload: { orderId }
+    })
+  })
 }
 ```
-
----
 
 ## Job Cards
 
-Job cards are the unit of work that workers process.
+Job cards are the unit of work delivered to workers.
 
-### Job Card Structure
+### Interface
 
-```typescript
-interface JobCard {
-  id: string;              // Unique job identifier
-  task: string;            // Task type (e.g., 'process-order')
-  payload: any;            // Task-specific data
-  priority: number;        // Job priority (1-10)
-  attempts: number;        // Retry attempt count
-  maxAttempts: number;     // Maximum retry attempts
-  createdAt: Date;         // When job was created
-  scheduledFor?: Date;     // Delayed execution time
-  tenantId: string;        // Tenant context
+```ts
+export interface JobCard {
+  id: string
+  task: string
+  payload: Record<string, unknown>
+  priority: number
+  attempts: number
+  maxAttempts: number
+  createdAt: Date
+  scheduledFor?: Date
+  tenantId: string
 }
 ```
 
-### Job Card Example
+### Example
 
-```typescript
+```ts
 {
-  id: 'job-123',
+  id: 'job-abc-123',
   task: 'process-order',
-  payload: {
-    orderId: 'order-456',
-    customerId: 'customer-789'
-  },
+  payload: { orderId: 'order-xyz-789' },
   priority: 5,
   attempts: 0,
   maxAttempts: 3,
   createdAt: new Date(),
-  tenantId: 'acme-corp'
+  tenantId: 'tenant-alpha'
 }
 ```
 
----
+### Job Card Delivery
 
-## The Control Loop
+Job cards are created and published by:
+- Experience layer APIs
+- Other workers (chaining tasks)
+- Scheduled job creators
+- Event-triggered systems
 
-The core provides the control loop infrastructure:
+Workers **consume** job cards, they don't create them for themselves.
 
-```typescript
+## Control Loop (Provided by Core)
+
+The base worker class provides the control infrastructure:
+
+```ts
 export abstract class BaseWorker {
-  // Core provides this control loop
-  async start(): Promise<void> {
+  async start() {
     while (this.isRunning) {
-      // 1. Beat
-      await this.beat();
+      await this.beat()
+      const jobs = await this.getJobs()
       
-      // 2. Get Jobs
-      const jobs = await this.getJobs();
-      
-      // 3. Work Loop
       for (const job of jobs) {
         try {
-          await this.work(job);
-          await this.acknowledgeJob(job);
+          await this.work(job)
+          await this.acknowledgeJob(job)
         } catch (error) {
-          await this.handleJobError(job, error);
+          await this.handleError(job, error)
         }
       }
       
-      // 4. Optimise
-      await this.optimise();
-      
-      // Wait before next cycle
-      await this.sleep(this.config.pollInterval);
+      await this.optimize()
+      await this.sleep(this.pollInterval)
     }
   }
   
   // You implement this
-  abstract work(jobCard: JobCard): Promise<void>;
+  abstract work(job: JobCard): Promise<void>
 }
 ```
 
----
+You implement `work()`. The core handles the loop.
 
 ## Task Function Structure
 
-Each task function follows this pattern:
+The `executeTask` wrapper provides built-in features:
 
-```typescript
-async myTask(jobCard: JobCard): Promise<void> {
-  // Wrap in executeTask for built-in error handling
-  return await this.executeTask(jobCard, async () => {
-    // 1. Extract payload
-    const { param1, param2 } = jobCard.payload;
+```ts
+async myTask(job: JobCard): Promise<void> {
+  return await this.executeTask(job, async () => {
+    // Your task logic here
     
-    // 2. Validate inputs
-    if (!param1) {
-      throw new ValidationError('param1 is required');
-    }
-    
-    // 3. Access bridge functions
-    const data = await this.bridge.getSomeData(param1);
-    
-    // 4. Execute business logic
-    const result = this.processSomething(data, param2);
-    
-    // 5. Update state via bridge
-    await this.bridge.updateSomething(result);
-    
-    // 6. Trigger downstream work if needed
-    if (result.requiresApproval) {
-      await this.bridge.publishToQueue('approvals', {
-        type: 'approval.required',
-        data: result
-      });
-    }
-    
-    // Task complete - executeTask handles success reporting
-  });
+    // executeTask automatically provides:
+    // - Error catching and logging
+    // - Retry logic based on job.maxAttempts
+    // - Metrics collection (duration, success/failure)
+    // - Transaction management
+    // - Timeout enforcement
+  })
 }
 ```
 
-### executeTask Benefits
+## Accessing the Bridge
 
-The `executeTask` wrapper provides:
+Workers access all data and functions through the Bridge:
 
-- **Error catching and logging** — Automatic error capture
-- **Retry logic** — Handles retries based on job card config
-- **Metrics reporting** — Tracks execution time, success/failure
-- **Transaction management** — Ensures atomicity
-- **Timeout handling** — Prevents hung tasks
-
----
-
-## Accessing the Bridge from Workers
-
-### Import Your Custom Bridge
-
-```typescript
-import { MyEcosystemBridge } from '../bridges/my-ecosystem-bridge';
-
+```ts
 export class MyWorker extends BaseWorker {
-  private bridge: MyEcosystemBridge;
+  private bridge: CustomBridge
   
   constructor(config: WorkerConfig) {
-    super(config);
-    
-    // Instantiate your bridge
-    this.bridge = new MyEcosystemBridge({
-      mongodb: config.mongodb,
-      redis: config.redis,
-      queue: config.queue,
-      tenantId: config.tenantId,
-      // Your custom config
-      erpUrl: config.erpUrl,
-      erpApiKey: config.erpApiKey
-    });
+    super(config)
+    this.bridge = new CustomBridge(config.bridge)
+  }
+  
+  async work(job: JobCard): Promise<void> {
+    // All operations go through Bridge
+    const data = await this.bridge.getData(job.payload.id)
+    const result = await this.bridge.processData(data)
+    await this.bridge.saveResult(result)
   }
 }
 ```
 
-### Using Bridge Functions
+**Never:**
+- Access databases directly
+- Call external APIs directly (use Bridge)
+- Share state between worker instances
+- Communicate directly with other workers
 
-```typescript
-async work(jobCard: JobCard): Promise<void> {
-  // Access core bridge functions
-  const engagement = await this.bridge.getEngagement(jobCard.payload.id);
-  const pricing = await this.bridge.calculatePrice(...);
-  await this.bridge.allocateInventory(...);
-  
-  // Access your custom bridge functions
-  await this.bridge.syncToErp(engagement);
-  await this.bridge.sendSms(customerId, message);
+## Extension Points
+
+### Custom Worker Types
+
+Create specialized workers for your business tasks:
+
+```ts
+export class InventorySyncWorker extends BaseWorker {
+  async work(job: JobCard): Promise<void> {
+    // Your inventory sync logic
+  }
 }
-```
 
----
-
-## Delivery of Job Cards
-
-Job cards are delivered by the **core infrastructure**, not by your code.
-
-### How It Works
-
-```
-1. Something creates a job card
-   ↓
-2. Core publishes to worker queue
-   ↓
-3. Worker's getJobs() fetches from queue
-   ↓
-4. Core delivers job card to work() function
-   ↓
-5. Your task function executes
-```
-
-### Creating Job Cards
-
-Other systems create job cards and publish them:
-
-```typescript
-// From an API endpoint
-await bridge.publishToQueue('order-processing', {
-  id: generateId(),
-  task: 'process-order',
-  payload: { orderId: '123' },
-  priority: 5,
-  attempts: 0,
-  maxAttempts: 3,
-  createdAt: new Date(),
-  tenantId: req.tenantId
-});
-```
-
-### Worker Consumes Job Cards
-
-Your worker doesn't create job cards, it **consumes** them:
-
-```typescript
-// Core handles this - you don't write this code
-async getJobs(): Promise<JobCard[]> {
-  return await this.bridge.consumeFromQueue(
-    this.queueName,
-    this.config.batchSize
-  );
-}
-```
-
----
-
-## Complete Worker Example
-
-```typescript
-import { BaseWorker, JobCard, WorkerConfig } from '@commercebridge/core';
-import { AcmeCommerceBridge } from '../bridges/acme-bridge';
-
-export class OrderProcessorWorker extends BaseWorker {
-  private bridge: AcmeCommerceBridge;
-  
-  constructor(config: WorkerConfig) {
-    super(config);
-    this.bridge = new AcmeCommerceBridge(config.bridge);
-  }
-  
-  // Main work function - routes to task functions
-  async work(jobCard: JobCard): Promise<void> {
-    switch (jobCard.task) {
-      case 'process-order':
-        return await this.processOrder(jobCard);
-      case 'confirm-order':
-        return await this.confirmOrder(jobCard);
-      case 'cancel-order':
-        return await this.cancelOrder(jobCard);
-      default:
-        throw new Error(`Unknown task: ${jobCard.task}`);
-    }
-  }
-  
-  // Task function: Process new order
-  private async processOrder(jobCard: JobCard): Promise<void> {
-    return await this.executeTask(jobCard, async () => {
-      const { orderId } = jobCard.payload;
-      
-      // Get engagement
-      const engagement = await this.bridge.getEngagement(orderId);
-      
-      // Allocate inventory (core function)
-      const allocation = await this.bridge.allocateInventory(
-        engagement.id,
-        engagement.lineItems
-      );
-      
-      if (!allocation.success) {
-        throw new InsufficientInventoryError('Cannot fulfill order');
-      }
-      
-      // Calculate final pricing (core function)
-      const pricing = await this.bridge.calculatePrice(
-        engagement.lineItems,
-        engagement.customerId
-      );
-      
-      // Update engagement (core function)
-      await this.bridge.updateEngagement(engagement.id, {
-        status: 'processing',
-        pricing,
-        allocation
-      });
-      
-      // Sync to ERP (custom function)
-      await this.bridge.syncOrderToErp(engagement);
-      
-      // Send notification (custom function)
-      await this.bridge.sendSmsNotification(
-        engagement.customerId,
-        'Your order is being processed!'
-      );
-      
-      // Trigger next step
-      await this.bridge.publishToQueue('order-confirmation', {
-        id: generateId(),
-        task: 'confirm-order',
-        payload: { orderId: engagement.id },
-        priority: 5,
-        attempts: 0,
-        maxAttempts: 3,
-        createdAt: new Date(),
-        tenantId: jobCard.tenantId
-      });
-    });
-  }
-  
-  // Task function: Confirm order
-  private async confirmOrder(jobCard: JobCard): Promise<void> {
-    return await this.executeTask(jobCard, async () => {
-      const { orderId } = jobCard.payload;
-      
-      const engagement = await this.bridge.getEngagement(orderId);
-      
-      await this.bridge.updateEngagement(engagement.id, {
-        status: 'confirmed'
-      });
-      
-      await this.bridge.sendEmailNotification(
-        engagement.customerId,
-        'order-confirmation',
-        { order: engagement }
-      );
-    });
-  }
-  
-  // Task function: Cancel order
-  private async cancelOrder(jobCard: JobCard): Promise<void> {
-    return await this.executeTask(jobCard, async () => {
-      const { orderId, reason } = jobCard.payload;
-      
-      const engagement = await this.bridge.getEngagement(orderId);
-      
-      // Release inventory (core function)
-      await this.bridge.releaseInventory(engagement.allocation.id);
-      
-      // Update status
-      await this.bridge.updateEngagement(engagement.id, {
-        status: 'cancelled',
-        cancellationReason: reason
-      });
-      
-      // Notify customer
-      await this.bridge.sendSmsNotification(
-        engagement.customerId,
-        `Order cancelled: ${reason}`
-      );
-    });
+export class ReportGeneratorWorker extends BaseWorker {
+  async work(job: JobCard): Promise<void> {
+    // Your reporting logic
   }
 }
 ```
 
----
+### Custom Task Routing
 
-## Worker Configuration
+Handle multiple related tasks in one worker:
 
-```typescript
-const workerConfig: WorkerConfig = {
-  workerId: 'order-processor-1',
-  workerType: 'order-processor',
-  queueName: 'order-processing',
-  pollInterval: 1000,        // ms between cycles
-  batchSize: 10,             // jobs per cycle
-  concurrency: 5,            // parallel task execution
-  
-  bridge: {
-    mongodb: { uri: process.env.MONGODB_URI },
-    redis: { host: process.env.REDIS_HOST },
-    queue: { url: process.env.RABBITMQ_URL },
-    tenantId: 'acme-corp',
-    
-    // Custom bridge config
-    erpUrl: process.env.ERP_URL,
-    erpApiKey: process.env.ERP_KEY
+```ts
+async work(job: JobCard): Promise<void> {
+  const handlers = {
+    'send-email': this.sendEmail,
+    'send-sms': this.sendSms,
+    'send-push': this.sendPush
   }
-};
-
-const worker = new OrderProcessorWorker(workerConfig);
-await worker.start();
+  
+  const handler = handlers[job.task]
+  if (!handler) {
+    throw new Error(`Unknown task: ${job.task}`)
+  }
+  
+  return await handler.call(this, job)
+}
 ```
+
+## Do / Don't
+
+### ✅ Do
+
+- Keep workers focused on single business tasks
+- Use the executeTask wrapper for all task functions
+- Access all data through the Bridge
+- Handle errors gracefully
+- Use job cards for all work
+- Report metrics
+
+### ❌ Don't
+
+- Maintain state between jobs
+- Communicate directly with other workers
+- Access infrastructure directly
+- Create your own control loop
+- Bypass executeTask wrapper
+- Mix multiple business domains in one worker
+
+## IP Safety
+
+This documentation describes:
+- **Public:** Worker patterns, interfaces, lifecycle
+- **Private (not shown):** Specific task implementations, queue configurations, tenant-specific workflows
 
 ---
 
-## Worker Lifecycle
-
-```
-1. Worker starts
-   ↓
-2. Connects to infrastructure (MongoDB, Redis, Queue)
-   ↓
-3. Sends initial heartbeat
-   ↓
-4. Enters control loop:
-   - beat
-   - getJobs
-   - work loop
-   - optimise
-   ↓
-5. On shutdown signal:
-   - Finish current jobs
-   - Send final heartbeat (status: stopping)
-   - Close connections
-   - Exit gracefully
-```
-
----
-
-## Best Practices
-
-### Do:
-
-✅ Keep workers focused on a single business task  
-✅ Use the provided `executeTask` wrapper  
-✅ Access all data through the bridge  
-✅ Handle errors gracefully  
-✅ Use job cards for all communication  
-✅ Keep task functions pure and testable  
-
-### Don't:
-
-❌ Share state between worker instances  
-❌ Communicate directly with other workers  
-❌ Access databases directly (use bridge)  
-❌ Create your own control loop  
-❌ Bypass the executeTask wrapper  
-❌ Mix multiple business tasks in one worker  
-
----
-
-**Workers: Autonomous, focused, and scalable.**
+**Workers: Focused, stateless, and scalable.**
