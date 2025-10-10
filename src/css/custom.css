@@ -78,6 +78,10 @@
   --ifm-link-hover-color: #7a8599;
 }
 
+.navbar__title {
+    padding-top:3px;
+}
+
 /* Custom styling for hero sections */
 .hero {
   background: linear-gradient(135deg, var(--foundry-dark-graphite) 0%, var(--foundry-graphite) 100%);

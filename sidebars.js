@@ -51,14 +51,6 @@ const sidebars = {
     'touchpoint/index',
     {
       type: 'category',
-      label: 'Overview',
-      items: [
-        'touchpoint/what-is-touchpoint',
-        'touchpoint/admin-vs-storefront',
-      ],
-    },
-    {
-      type: 'category',
       label: 'Architecture',
       items: [
         'touchpoint/slot-based-ui',
