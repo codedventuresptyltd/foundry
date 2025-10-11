@@ -90,16 +90,9 @@ const sidebars = {
               type: 'category',
               label: 'Architecture',
               items: [
-                'touchpoint/slot-based-ui',
                 'touchpoint/commercebridge-integration',
-              ],
-            },
-            {
-              type: 'category',
-              label: 'Guides',
-              items: [
-                'touchpoint/customization',
-                'touchpoint/example-flows',
+                'touchpoint/slot-based-ui',
+                'touchpoint/search',
               ],
             },
           ],
@@ -187,66 +180,6 @@ const sidebars = {
       type: 'link',
       label: 'GitHub',
       href: 'https://github.com/codedventuresptyltd/public',
-    },
-  ],
-
-  // CommerceBridge sidebar
-  commercebridgeSidebar: [
-    'commercebridge/index',
-    'commercebridge/architecture',
-    {
-      type: 'category',
-      label: 'Core Components',
-      items: [
-        'commercebridge/bridge',
-        'commercebridge/core-bridge',
-        'commercebridge/workers',
-        'commercebridge/pricing-engine',
-        'commercebridge/fulfillment-engine',
-        'commercebridge/integrations', // Custom Ecosystems
-      ],
-    },
-  ],
-
-  // Touchpoint sidebar
-  touchpointSidebar: [
-    'touchpoint/index',
-    {
-      type: 'category',
-      label: 'Architecture',
-      items: [
-        'touchpoint/slot-based-ui',
-        'touchpoint/commercebridge-integration',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Guides',
-      items: [
-        'touchpoint/customization',
-        'touchpoint/example-flows',
-      ],
-    },
-  ],
-
-  // Eidos sidebar
-  eidosSidebar: [
-    'eidos/index',
-    {
-      type: 'category',
-      label: 'Concepts',
-      items: [
-        'eidos/product-dna',
-        'eidos/data-schema',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Implementation',
-      items: [
-        'eidos/rule-sets',
-        'eidos/commercebridge-integration',
-      ],
     },
   ],
 };

@@ -103,20 +103,17 @@ const config = {
             label: 'Home',
           },
           {
-            type: 'docSidebar',
-            sidebarId: 'commercebridgeSidebar',
+            to: '/commercebridge',
             position: 'left',
             label: 'CommerceBridge',
           },
           {
-            type: 'docSidebar',
-            sidebarId: 'touchpointSidebar',
+            to: '/touchpoint',
             position: 'left',
             label: 'Touchpoint',
           },
           {
-            type: 'docSidebar',
-            sidebarId: 'eidosSidebar',
+            to: '/eidos',
             position: 'left',
             label: 'Eidos',
           },
