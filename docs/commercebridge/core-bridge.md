@@ -18,22 +18,13 @@ The Core Bridge is the base class that all ecosystem-specific bridges extend. It
 
 Lifecycle operations for commerce conversations.
 
-```ts
-// Create new engagement
-createEngagement(params: EngagementParams): Promise<Engagement>
-
-// Retrieve engagement
-getEngagement(id: string): Promise<Engagement>
-
-// Update engagement state
-updateEngagement(id: string, updates: Partial<Engagement>): Promise<Engagement>
-
-// Finalize and close
-finalizeEngagement(id: string): Promise<void>
-
-// Get history/audit trail
-getEngagementHistory(id: string): Promise<EngagementEvent[]>
-```
+| Operation | Purpose |
+|-----------|---------|
+| `createEngagement` | Create new engagement |
+| `getEngagement` | Retrieve engagement |
+| `updateEngagement` | Update engagement state |
+| `finalizeEngagement` | Finalize and close |
+| `getEngagementHistory` | Get history/audit trail |
 
 **Example usage:**
 
@@ -54,19 +45,12 @@ await bridge.updateEngagement(engagement.id, {
 
 Price calculation with multi-stage modifiers.
 
-```ts
-// Calculate final price
-calculatePrice(context: PricingContext): Promise<PricingResult>
-
-// Apply modifier chain
-applyPriceModifiers(base: number, modifiers: Modifier[]): Promise<number>
-
-// Get customer-specific pricing
-getCustomerPricing(customerId: string, productId: string): Promise<CustomerPrice>
-
-// Get historical price
-getPriceSnapshot(productId: string, date: Date): Promise<PriceSnapshot>
-```
+| Operation | Purpose |
+|-----------|---------|
+| `calculatePrice` | Calculate final price |
+| `applyPriceModifiers` | Apply modifier chain |
+| `getCustomerPricing` | Get customer-specific pricing |
+| `getPriceSnapshot` | Get historical price |
 
 **Example usage:**
 
@@ -88,22 +72,13 @@ console.log(pricing.modifiers)  // Breakdown of adjustments
 
 Inventory and delivery management.
 
-```ts
-// Allocate inventory
-allocateInventory(engagementId: string, items: LineItem[]): Promise<AllocationResult>
-
-// Check availability
-checkAvailability(query: AvailabilityQuery): Promise<AvailabilityResult>
-
-// Optimize allocation
-optimizeFulfillment(engagementId: string): Promise<FulfillmentPlan>
-
-// Release reservation
-releaseInventory(reservationId: string): Promise<void>
-
-// Get warehouses by zone
-getWarehousesByZone(zone: string): Promise<Warehouse[]>
-```
+| Operation | Purpose |
+|-----------|---------|
+| `allocateInventory` | Allocate inventory |
+| `checkAvailability` | Check availability |
+| `optimizeFulfillment` | Optimize allocation |
+| `releaseInventory` | Release reservation |
+| `getWarehousesByZone` | Get warehouses by zone |
 
 **Example usage:**
 
@@ -124,22 +99,13 @@ if (!allocation.success) {
 
 Distributed caching for performance.
 
-```ts
-// Store in cache
-cacheData(key: string, value: unknown, ttl?: number): Promise<void>
-
-// Retrieve from cache
-getFromCache(key: string): Promise<unknown>
-
-// Invalidate single key
-invalidateCache(key: string): Promise<void>
-
-// Invalidate by pattern
-invalidateCachePattern(pattern: string): Promise<number>
-
-// Pre-warm cache
-warmCache(keys: string[]): Promise<void>
-```
+| Operation | Purpose |
+|-----------|---------|
+| `cacheData` | Store in cache |
+| `getFromCache` | Retrieve from cache |
+| `invalidateCache` | Invalidate single key |
+| `invalidateCachePattern` | Invalidate by pattern |
+| `warmCache` | Pre-warm cache |
 
 **Example usage:**
 
@@ -161,19 +127,12 @@ await bridge.invalidateCache(`engagement:${id}`)
 
 Message queue for worker coordination.
 
-```ts
-// Publish job card
-publishTask(queue: string, job: JobCard): Promise<void>
-
-// Fetch jobs (used by workers)
-fetchJobsFromQueue(queue: string, batchSize: number): Promise<JobCard[]>
-
-// Acknowledge job completion
-acknowledgeJob(jobId: string): Promise<void>
-
-// Publish heartbeat
-publishHeartbeat(worker: WorkerStatus): Promise<void>
-```
+| Operation | Purpose |
+|-----------|---------|
+| `publishTask` | Publish job card |
+| `fetchJobsFromQueue` | Fetch jobs (used by workers) |
+| `acknowledgeJob` | Acknowledge job completion |
+| `publishHeartbeat` | Publish heartbeat |
 
 **Example usage:**
 
@@ -193,18 +152,26 @@ await bridge.publishTask('order-processing', {
 
 Product catalog queries.
 
+| Operation | Purpose |
+|-----------|---------|
+| `getProduct` | Get product by ID |
+| `getProductBySku` | Get product by SKU |
+| `searchProducts` | Search products |
+| `getProductsByCategory` | Get by category |
+
+**Example usage:**
+
 ```ts
-// Get product by ID
-getProduct(id: string): Promise<Product>
+// Get product details
+const product = await bridge.getProduct('product-456')
 
-// Get product by SKU
-getProductBySku(sku: string): Promise<Product>
-
-// Search products
-searchProducts(query: SearchQuery): Promise<SearchResult>
-
-// Get by category
-getProductsByCategory(category: string): Promise<Product[]>
+// Search with filters
+const results = await bridge.searchProducts({
+  query: 'steel pipe',
+  category: 'plumbing',
+  zone: 'midwest',
+  limit: 20
+})
 ```
 
 ---
@@ -213,18 +180,28 @@ getProductsByCategory(category: string): Promise<Product[]>
 
 Customer data management.
 
-```ts
-// Get customer details
-getCustomer(id: string): Promise<Customer>
+| Operation | Purpose |
+|-----------|---------|
+| `getCustomer` | Get customer details |
+| `getCustomerPricingRules` | Get customer pricing rules |
+| `getCustomerAddresses` | Get delivery addresses |
+| `getCustomerHistory` | Get order history |
 
-// Get customer pricing rules
-getCustomerPricingRules(customerId: string): Promise<PricingRule[]>
+**Example usage:**
+
+```ts
+// Get customer with pricing
+const customer = await bridge.getCustomer('customer-123')
+const pricingRules = await bridge.getCustomerPricingRules('customer-123')
 
 // Get delivery addresses
-getCustomerAddresses(customerId: string): Promise<Address[]>
+const addresses = await bridge.getCustomerAddresses('customer-123')
 
 // Get order history
-getCustomerHistory(customerId: string): Promise<Order[]>
+const history = await bridge.getCustomerHistory('customer-123', {
+  limit: 10,
+  startDate: '2025-01-01'
+})
 ```
 
 ---
@@ -233,16 +210,31 @@ getCustomerHistory(customerId: string): Promise<Order[]>
 
 Multi-tenant configuration.
 
+| Operation | Purpose |
+|-----------|---------|
+| `getTenantConfig` | Get tenant configuration |
+| `checkTenantFeature` | Check feature flag |
+| `getTenantSettings` | Get tenant settings |
+
+**Example usage:**
+
 ```ts
 // Get tenant configuration
-getTenantConfig(tenantId: string): Promise<TenantConfig>
+const config = await bridge.getTenantConfig('tenant-alpha')
 
-// Check feature flag
-checkTenantFeature(tenantId: string, feature: string): Promise<boolean>
+// Check feature availability
+const hasAdvancedPricing = await bridge.checkTenantFeature(
+  'tenant-alpha',
+  'advanced-pricing'
+)
 
-// Get tenant settings
-getTenantSettings(tenantId: string): Promise<Settings>
+// Get specific settings
+const settings = await bridge.getTenantSettings('tenant-alpha')
+console.log(settings.defaultCurrency) // 'USD'
+console.log(settings.timezone)        // 'America/Chicago'
 ```
+
+---
 
 ## Example: Complete Flow
 

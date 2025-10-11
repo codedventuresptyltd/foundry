@@ -29,12 +29,12 @@ Stateless, autonomous processors that execute discrete business tasks.
 ## Lifecycle
 
 ### 1. Startup
-- Connect to infrastructure (via Bridge)
-- Register with worker registry
-- Send initial heartbeat
-- Begin consumption cycle
+Connect to base infrastructure (via Bridge)
+Register with assigned community
+Send initial heartbeat
+Begin consumption cycle
 
-### 2. Processing Cycle
+### 2. Processing Cycle (the Loop)
 Continuous loop of:
 ```
 beat → getJobs → process → optimize → repeat
@@ -46,7 +46,7 @@ beat → getJobs → process → optimize → repeat
 - Send final heartbeat
 - Close connections cleanly
 
-## The Worker Loop
+## The Worker Cycle
 
 ```mermaid
 flowchart LR
@@ -57,50 +57,78 @@ flowchart LR
 ```
 
 ### Beat (Heartbeat)
-Worker announces its presence and health:
-
-```ts
-async beat() {
-  await this.bridge.publishHeartbeat({
-    workerId: this.id,
-    workerType: this.type,
-    status: 'active',
-    timestamp: Date.now()
-  })
-}
-```
+Worker announces its presence and health. Automated managed action through the worker framework. When developing a worker you don't need to manage this process.
 
 ### Get Jobs
-Worker fetches available work from its queue:
-
-```ts
-async getJobs() {
-  return await this.bridge.fetchJobsFromQueue(
-    this.queueName,
-    this.batchSize
-  )
-}
-```
+Worker fetches available work from its queue. Batching, caching and retry/recovery are managed actions through the worker framework. When developing a worker you don't need to manage this process.
 
 ### Process Jobs
-Worker executes each job:
+This invokes the `work()` function within the extension framework. Here is where the business logic is added through a series of modular functions (tasks).
+
+#### Task Functions
+
+The core control method `processJobs` manages the complete job processing lifecycle:
+
+**Purpose:** Provides robust, fault-tolerant batch processing with automatic error handling and retry logic.
+
+**What it does:**
+- **Receives:** A batch of job cards and a processor function
+- **Batch Processing:** Processes each job card in the batch through the provided function
+- **Retry Logic:** Automatically retries failed jobs up to 3 times with exponential backoff
+- **Error Management:** Catches and handles errors without stopping the entire batch
+- **Failure Management:** Stops batch processing only if a job fails after all retries
+- **Timeout Protection:** Prevents jobs from hanging with configurable timeouts
+- **Status Tracking:** Updates job card status (Processed/Error) based on results
+- **Returns:** The complete batch of job cards with updated statuses
+
+**Configuration Options:**
+- `maxRetries`: Number of retry attempts (default: 3)
+- `retryDelay`: Delay between retries (default: 1000ms)
+- `timeout`: Maximum execution time per job (default: 5000ms)
+
+**State Management:** The worker state management model requires adding the outcome of each task to `jobCard.data` so it is passed on to the next task while maintaining multi-job batch simplicity.
+
+#### The Worker Cycle
+
+This is how the main `work()` function is structured using the underlying framework:
 
 ```ts
-for (const job of jobs) {
-  await this.work(job)
+async work(): Promise<void> {
+  // Phase 1: Data extraction
+  this.cycleMeta.jobCards = await this.getSourceDataFromRepository(this.cycleMeta.jobCards)
+  
+  // Phase 2: Data transformation  
+  this.cycleMeta.jobCards = await this.transformData(this.cycleMeta.jobCards)
+  
+  // Phase 3: Data loading
+  this.cycleMeta.jobCards = await this.saveProcessedData(this.cycleMeta.jobCards)
 }
 ```
+
+#### Task Functions
+
+Each phase is implemented as a task function using the core control method `cycleMeta.processJobs`:
+
+```ts
+// Example task function using cycleMeta.processJobs
+protected async transformData(jobCards: JobModel[]): Promise<JobModel[]> {
+  return this.cycleMeta.processJobs(async (jobCard: JobModel) => {
+    // Your business logic here
+    const result = await this.processEngagement(jobCard.data.sourceEngagement)
+    
+    // Add result to jobCard.data for next task
+    jobCard.data.calculatedEngagement = result
+    jobCard.status = "Processed"
+    
+    return jobCard
+  }, jobCards)
+}
+```
+
+Notice the `cycleMeta.processJobs` method which manages the failure, retry and error management for each task run. Also notice the batching methodology.
 
 ### Optimize
-Worker performs housekeeping:
-
-```ts
-async optimize() {
-  this.clearLocalCache()
-  await this.reportMetrics()
-  await this.checkForShutdownSignal()
-}
-```
+Worker performs housekeeping. Automated managed action through the worker framework. When developing a worker you don't need to manage this process.
 
 ## Worker Pattern
 
@@ -134,74 +162,6 @@ Workers are self-sufficient:
 - Fetch all needed data from Bridge
 - Make autonomous decisions
 - Can fail without affecting other workers
-
-## Building a Worker
-
-### Step 1: Import Core Models
-
-```ts
-import { BaseWorker, JobCard, WorkerConfig } from '@commercebridge/core'
-import { CustomBridge } from '../bridge/custom-bridge'
-```
-
-### Step 2: Define Worker Class
-
-```ts
-export class OrderProcessor extends BaseWorker {
-  private bridge: CustomBridge
-  
-  constructor(config: WorkerConfig) {
-    super(config)
-    this.bridge = new CustomBridge(config.bridge)
-  }
-  
-  async work(job: JobCard): Promise<void> {
-    // Route to task handlers
-    switch (job.task) {
-      case 'process-order':
-        return await this.processOrder(job)
-      case 'confirm-order':
-        return await this.confirmOrder(job)
-      default:
-        throw new Error(`Unknown task: ${job.task}`)
-    }
-  }
-}
-```
-
-### Step 3: Implement Task Functions
-
-Each task function follows this pattern:
-
-```ts
-async processOrder(job: JobCard): Promise<void> {
-  return await this.executeTask(job, async () => {
-    // 1. Extract payload
-    const { orderId } = job.payload
-    
-    // 2. Access Bridge
-    const engagement = await this.bridge.getEngagement(orderId)
-    
-    // 3. Execute business logic
-    const allocation = await this.bridge.allocateInventory(
-      engagement.id,
-      engagement.lineItems
-    )
-    
-    // 4. Update state
-    await this.bridge.updateEngagement(engagement.id, {
-      status: 'processing',
-      allocation
-    })
-    
-    // 5. Trigger next steps (if needed)
-    await this.bridge.publishTask('order-confirmation', {
-      task: 'confirm-order',
-      payload: { orderId }
-    })
-  })
-}
-```
 
 ## Job Cards
 
@@ -248,69 +208,6 @@ Job cards are created and published by:
 
 Workers **consume** job cards, they don't create them for themselves.
 
-## Control Loop (Provided by Core)
-
-The base worker class provides the control infrastructure:
-
-```ts
-export abstract class BaseWorker {
-  async start() {
-    while (this.isRunning) {
-      await this.beat()
-      const jobs = await this.getJobs()
-      
-      for (const job of jobs) {
-        try {
-          await this.work(job)
-          await this.acknowledgeJob(job)
-        } catch (error) {
-          await this.handleError(job, error)
-        }
-      }
-      
-      await this.optimize()
-      await this.sleep(this.pollInterval)
-    }
-  }
-  
-  // You implement this
-  abstract work(job: JobCard): Promise<void>
-}
-```
-
-You implement `work()`. The core handles the loop.
-
-## Task Function Structure
-
-The `executeTask` wrapper provides built-in features:
-
-```ts
-async myTask(job: JobCard): Promise<void> {
-  return await this.executeTask(job, async () => {
-    // Your task logic here
-    
-    // executeTask automatically provides:
-    // - Error catching and logging
-    // - Retry logic based on job.maxAttempts
-    // - Metrics collection (duration, success/failure)
-    // - Transaction management
-    // - Timeout enforcement
-  })
-}
-```
-
-## MeshWorker Pattern
-
-For simpler worker implementations, you can extend MeshWorker:
-
-```ts
-export class MyWorker extends MeshWorker {
-  async work(job: JobCard) {
-    // Your business task
-  }
-}
-```
-
 ## Accessing the Bridge
 
 Workers access all data and functions through the Bridge:
@@ -324,11 +221,22 @@ export class MyWorker extends BaseWorker {
     this.bridge = new CustomBridge(config.bridge)
   }
   
-  async work(job: JobCard): Promise<void> {
-    // All operations go through Bridge
-    const data = await this.bridge.getData(job.payload.id)
-    const result = await this.bridge.processData(data)
-    await this.bridge.saveResult(result)
+  async work(): Promise<void> {
+    this.cycleMeta.jobCards = await this.processData(this.cycleMeta.jobCards)
+  }
+  
+  protected async processData(jobCards: JobModel[]): Promise<JobModel[]> {
+    return this.cycleMeta.processJobs(async (jobCard: JobModel) => {
+      // All operations go through Bridge
+      const data = await this.bridge.getData(jobCard.data.id)
+      const result = await this.bridge.processData(data)
+      
+      // Store results in jobCard.data
+      jobCard.data.result = result
+      jobCard.status = "Processed"
+      
+      return jobCard
+    }, jobCards)
   }
 }
 ```
@@ -339,44 +247,102 @@ export class MyWorker extends BaseWorker {
 - Share state between worker instances
 - Communicate directly with other workers
 
-## Extension Points
+## Building a Worker
 
-### Custom Worker Types
-
-Create specialized workers for your business tasks:
+### Step 1: Import Core Models
 
 ```ts
-export class InventorySyncWorker extends BaseWorker {
-  async work(job: JobCard): Promise<void> {
-    // Your inventory sync logic
-  }
-}
+import { BaseWorker, JobCard, WorkerConfig } from '@commercebridge/core'
+import { CustomBridge } from '../bridge/custom-bridge'
+```
 
-export class ReportGeneratorWorker extends BaseWorker {
-  async work(job: JobCard): Promise<void> {
-    // Your reporting logic
+### Step 2: Define Worker Class
+
+```ts
+export class OrderProcessor extends BaseWorker {
+  private bridge: CustomBridge
+  
+  constructor(config: WorkerConfig) {
+    super(config)
+    this.bridge = new CustomBridge(config.bridge)
+  }
+  
+  async work(): Promise<void> {
+    // Phase 1: Fetch order data
+    this.cycleMeta.jobCards = await this.fetchOrderData(this.cycleMeta.jobCards)
+    
+    // Phase 2: Process orders
+    this.cycleMeta.jobCards = await this.processOrders(this.cycleMeta.jobCards)
+    
+    // Phase 3: Update results
+    this.cycleMeta.jobCards = await this.saveResults(this.cycleMeta.jobCards)
   }
 }
 ```
 
-### Custom Task Routing
+### Step 3: Implement Task Functions
 
-Handle multiple related tasks in one worker:
+Each task function uses `cycleMeta.processJobs` for batch processing with automatic retry/error handling:
 
 ```ts
-async work(job: JobCard): Promise<void> {
-  const handlers = {
-    'send-email': this.sendEmail,
-    'send-sms': this.sendSms,
-    'send-push': this.sendPush
-  }
-  
-  const handler = handlers[job.task]
-  if (!handler) {
-    throw new Error(`Unknown task: ${job.task}`)
-  }
-  
-  return await handler.call(this, job)
+protected async processOrders(jobCards: JobModel[]): Promise<JobModel[]> {
+  return this.cycleMeta.processJobs(async (jobCard: JobModel) => {
+    // 1. Extract data
+    const orderId = jobCard.data.orderId
+    
+    // 2. Access Bridge for engagement
+    const engagement = await this.bridge.getEngagement(orderId)
+    
+    // 3. Execute business logic
+    const allocation = await this.bridge.allocateInventory(
+      engagement.id,
+      engagement.lineItems
+    )
+    
+    // 4. Add results to jobCard.data for next task
+    jobCard.data.engagement = engagement
+    jobCard.data.allocation = allocation
+    jobCard.status = "Processed"
+    
+    return jobCard
+  }, jobCards)
+}
+```
+
+## Extension Points
+
+### Custom Task Routing
+
+Handle multiple related tasks with conditional logic:
+
+```ts
+async work(): Promise<void> {
+  // Phase 1: Determine task type and route
+  this.cycleMeta.jobCards = await this.routeMessages(this.cycleMeta.jobCards)
+}
+
+protected async routeMessages(jobCards: JobModel[]): Promise<JobModel[]> {
+  return this.cycleMeta.processJobs(async (jobCard: JobModel) => {
+    const taskType = jobCard.data.messageType
+    
+    // Route to appropriate handler based on task type
+    switch (taskType) {
+      case 'email':
+        await this.bridge.sendEmail(jobCard.data)
+        break
+      case 'sms':
+        await this.bridge.sendSms(jobCard.data)
+        break
+      case 'push':
+        await this.bridge.sendPush(jobCard.data)
+        break
+      default:
+        throw new Error(`Unknown message type: ${taskType}`)
+    }
+    
+    jobCard.status = "Processed"
+    return jobCard
+  }, jobCards)
 }
 ```
 
@@ -385,26 +351,21 @@ async work(job: JobCard): Promise<void> {
 ### ✅ Do
 
 - Keep workers focused on single business tasks
-- Use the executeTask wrapper for all task functions
+- Use `cycleMeta.processJobs` for all task functions
 - Access all data through the Bridge
-- Handle errors gracefully
-- Use job cards for all work
-- Report metrics
+- Store results in `jobCard.data` for next task
+- Process job cards in batches
+- Return updated job cards from each task
 
 ### ❌ Don't
 
-- Maintain state between jobs
+- Maintain state between cycles
 - Communicate directly with other workers
 - Access infrastructure directly
 - Create your own control loop
-- Bypass executeTask wrapper
+- Bypass `cycleMeta.processJobs` wrapper
 - Mix multiple business domains in one worker
-
-## IP Safety
-
-This documentation describes:
-- **Public:** Worker patterns, interfaces, lifecycle
-- **Private (not shown):** Specific task implementations, queue configurations, tenant-specific workflows
+- Process job cards individually (always use batch processing)
 
 ---
 

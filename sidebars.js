@@ -28,19 +28,17 @@ const sidebars = {
       items: [
         'commercebridge/bridge',
         'commercebridge/core-bridge',
-        'commercebridge/engagement',
         'commercebridge/workers',
         'commercebridge/pricing-engine',
         'commercebridge/fulfillment-engine',
+        'commercebridge/integrations', // Custom Ecosystems
       ],
     },
     {
       type: 'category',
-      label: 'Integration',
+      label: 'SDK Reference',
       items: [
         'commercebridge/sdk-reference',
-        'commercebridge/integration-examples',
-        'commercebridge/extending',
       ],
     },
   ],
@@ -97,6 +95,7 @@ const sidebars = {
         'core/worker-ecosystems',
         'core/bridge-architecture',
         'core/engagement-centric-design',
+        'core/engagements',
       ],
     },
     {

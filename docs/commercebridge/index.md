@@ -148,35 +148,17 @@ Allocation system that:
 
 ## Extension Model
 
-CommerceBridge is designed to be **extended, not modified**:
+CommerceBridge is designed to be **extended, not modified**. Rather than forking or modifying the core framework, you create custom ecosystems that import the base functionality and add your specific business logic.
 
-### Extend the Bridge
+Your custom ecosystem combines:
+- **Core workers** from the `@mesh/ecosystem` package
+- **Custom workers** with your business-specific logic
+- **Extended Bridge** with your integrations (ERPs, payment systems, messaging services)
+- **Configuration** that defines how everything connects
 
-Add your integrations and business logic:
+This approach keeps the core framework clean and upgradeable while giving you complete flexibility to build exactly what your business needs. Workers access both core Bridge functions (engagement management, pricing, fulfillment) and your custom Bridge functions (ERP sync, custom pricing rules, specialized workflows) through a single unified interface.
 
-```ts
-export class MyBridge extends BaseBridge {
-  async syncToErp(order: Order) {
-    // Your ERP integration
-  }
-  
-  async customPricingLogic(context: PricingContext) {
-    // Your pricing rules
-  }
-}
-```
-
-### Create Workers
-
-Build task-specific processors:
-
-```ts
-export class MyWorker extends BaseWorker {
-  async work(job: JobCard) {
-    // Your business task
-  }
-}
-```
+[Learn how to build Custom Ecosystems →](/commercebridge/integrations)
 
 ## Next
 

@@ -58,11 +58,11 @@ flowchart TB
 
 ## Core Layers
 
-### 1. Presentation Layer (Touchpoint)
-- Angular-based UI framework
-- Customer-facing storefronts
-- Admin management interfaces
-- Real-time data binding
+### 1. Admin and Monitoring Layer
+- Manages communities and workers
+- Provides community monitoring
+- Provides the configuration framework for Touchpoint
+- Manages datastores and data syncing
 
 ### 2. API Layer (Experience Endpoints)
 - REST APIs for UI consumption
@@ -83,13 +83,13 @@ flowchart TB
 - Business task specialization
 
 ### 5. Data Layer
-- **Cache:** Hot data and session state
-- **Data Store:** Persistent commerce data
-- **Search Engine:** Full-text and spatial queries
+- **Datastore:** Persistent data sinks used as a data abstraction layer
+- **Common Data Models:** Used across CommerceBridge, Touchpoint and Eidos
 
 ### 6. Integration Layer
 - **Message Queue:** Worker task distribution
 - **External Systems:** ERP, payment, shipping, etc. (via Bridge extensions)
+- **Search Engine:** Full-text and spatial queries
 
 ## Communication Patterns
 
@@ -171,16 +171,16 @@ export class TenantBridge extends BaseBridge {
 - No direct service-to-service calls
 - Natural retry and fault tolerance
 
-### 3. Stateless Workers
+### 3. Stateless between Workers, Stateful Within a Worker
 
 **Problem:** Scaling stateful services is complex.
 
-**Solution:** Workers maintain no state:
+**Solution:** Workers maintain state only within the cycle:
 
-- All state in Bridge
 - Workers are disposable
 - Scale by adding instances
 - Deploy new versions alongside old
+- Some state between jobs and job tasks processed within the same worker can be held to increase efficiency
 
 ### 4. Multi-Tenant Isolation
 

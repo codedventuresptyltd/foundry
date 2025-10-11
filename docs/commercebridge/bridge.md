@@ -72,33 +72,9 @@ flowchart TB
 
 ### Base Bridge Interface
 
-```ts
-export interface Bridge {
-  // Engagement operations
-  createEngagement(params: EngagementParams): Promise<Engagement>
-  getEngagement(id: string): Promise<Engagement>
-  updateEngagement(id: string, updates: Partial<Engagement>): Promise<Engagement>
-  
-  // Pricing operations
-  calculatePrice(context: PricingContext): Promise<PricingResult>
-  applyPriceModifiers(base: number, modifiers: Modifier[]): Promise<number>
-  
-  // Fulfillment operations
-  allocateInventory(engagementId: string, items: LineItem[]): Promise<AllocationResult>
-  checkAvailability(query: AvailabilityQuery): Promise<AvailabilityResult>
-  
-  // State operations
-  cacheData(key: string, value: unknown, ttl?: number): Promise<void>
-  getFromCache(key: string): Promise<unknown>
-  invalidateCache(pattern: string): Promise<void>
-  
-  // Queue operations
-  publishTask(queue: string, task: JobCard): Promise<void>
-  
-  // Multi-tenant operations
-  getTenantConfig(tenantId: string): Promise<TenantConfig>
-}
-```
+The Bridge provides a comprehensive set of operations organized into functional categories: engagement management, pricing calculations, fulfillment operations, state management, queue operations, and multi-tenant configuration.
+
+For the complete API reference with all available functions and their purposes, see the [Core Bridge API →](/commercebridge/core-bridge) documentation.
 
 ## Example (Pseudo)
 
@@ -107,12 +83,7 @@ export interface Bridge {
 ```ts
 import { BaseBridge } from '@commercebridge/core'
 
-const bridge = new BaseBridge({
-  dataStore: { /* connection config */ },
-  cache: { /* connection config */ },
-  queue: { /* connection config */ },
-  tenantId: 'tenant-alpha'
-})
+const bridge = new BaseBridge(bridgeConfig)
 
 // Create an engagement
 const engagement = await bridge.createEngagement({
