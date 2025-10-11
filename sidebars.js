@@ -89,6 +89,13 @@ const sidebars = {
             'touchpoint/commercebridge-integration',
             'touchpoint/slot-based-ui',
             'touchpoint/search',
+            {
+              type: 'category',
+              label: 'Modules',
+              items: [
+                'touchpoint/trade-order-form',
+              ],
+            },
           ],
         },
         {
