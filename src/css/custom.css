@@ -172,9 +172,55 @@ code {
   font-size: 1.5rem;
   color: #7a8599 !important;
   letter-spacing: 0.5px;
+  margin-left: 2rem;
+  padding-left: 2rem;
   margin-right: 2rem;
   padding-right: 2rem;
+  border-left: 1px solid rgba(122, 133, 153, 0.2);
   border-right: 1px solid rgba(122, 133, 153, 0.2);
+}
+
+/* Tablet and Mobile: Smaller logo and title on one line */
+@media (max-width: 1440px) {
+  .navbar__logo {
+    height: 1.5rem;
+    margin-right: 0.5rem;
+  }
+  
+  .navbar__logo img {
+    height: 1.5rem;
+  }
+  
+  .navbar__title {
+    font-size: 1.1rem;
+    margin-left: 0.5rem;
+    padding-left: 0.5rem;
+    margin-right: 0.75rem;
+    padding-right: 0.75rem;
+    letter-spacing: 0.5px;
+    border-left: 1px solid rgba(122, 133, 153, 0.15);
+    border-right: 1px solid rgba(122, 133, 153, 0.15);
+  }
+}
+
+/* Very small mobile: Even more compact */
+@media (max-width: 576px) {
+  .navbar__logo {
+    height: 1.2rem;
+    margin-right: 0.3rem;
+  }
+  
+  .navbar__logo img {
+    height: 1.2rem;
+  }
+  
+  .navbar__title {
+    font-size: 0.85rem;
+    margin-left: 0.3rem;
+    padding-left: 0.3rem;
+    margin-right: 0.4rem;
+    padding-right: 0.4rem;
+  }
 }
 
 .navbar__item {

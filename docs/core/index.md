@@ -17,27 +17,31 @@ Our core concepts span three main areas:
 
 ### Architecture Patterns
 
-Distributed systems design and orchestration:
+Distributed systems design and abstraction:
 
 - **[Worker Ecosystems](/core/worker-ecosystems)** — Distributed, autonomous processing systems
-- **[Bridge Architecture](/core/bridge-architecture)** — Centralized integration and orchestration layer
+- **[Bridge Architecture](/core/bridge-architecture)** — Central abstraction layer between workers and integrations
 - **[Engagement-Centric Design](/core/engagement-centric-design)** — Modeling commerce as conversations, not transactions
+- **[Engagements](/core/engagements)** — Lifecycle containers for commerce conversations
 
 ### Commerce Concepts
 
 Domain-specific patterns for B2B commerce:
 
-- **[Pricing Models](/core/pricing-models)** — Multi-stage pricing with sophisticated modifiers
-- **[Caching Strategies](/core/caching-strategies)** — Multi-layer state management and optimization
+- **[Pricing](/core/pricing-models)** — Flexible rule-based pricing engine
+- **[Datastores](/core/caching-strategies)** — Data sinks that buffer and synchronize between systems
 - **[Fulfillment](/core/fulfillment)** — Intelligent inventory allocation and delivery orchestration
 
 ### Operations
 
 Running and scaling distributed systems:
 
-- **[Tenant Isolation](/core/tenant-isolation)** — Multi-tenant security and data separation
 - **[Security](/core/security)** — Defense-in-depth security approach
 - **[DevOps Philosophy](/core/devops-philosophy)** — "Starve old workers, evolve ecosystems"
+
+### Reference
+
+- **[Models & Types](/core/models)** — Core data structures defined
 
 ---
 
@@ -67,21 +71,21 @@ Key principles:
 
 ### [Bridge Architecture](/core/bridge-architecture)
 
-**Centralized integration and orchestration**
+**Central abstraction layer between workers and integrations**
 
-The Bridge is the single, common service layer that provides:
+The Bridge provides a common application interface that abstracts integrations. Workers call Bridge functions instead of directly accessing databases, APIs, or external systems.
 
-- Shared integrations (messaging, payments, shipping)
+The Bridge handles:
+- State management and coordination
+- Shared integrations (messaging, payments, shipping, ERPs)
 - Multi-tenant resource coordination
-- State management and caching
-- API gateway and routing
-- Business logic enforcement
+- Access control and security
 
 Key principles:
-- All shared integrations live in the Bridge
-- Workers consume Bridge services
-- No side-services or microservice sprawl
-- Clean boundaries between orchestration and processing
+- Workers call Bridge functions, not external systems directly
+- Common API interface abstracts integration complexity
+- Extend the Bridge to add your integrations
+- Clean separation between processing logic and integration logic
 
 [Learn about Bridge Architecture →](/core/bridge-architecture)
 
@@ -107,178 +111,9 @@ This pattern applies beyond commerce to any multi-step, stateful process.
 
 ## Commerce Concepts
 
-### [Pricing Models](/core/pricing-models)
+These concepts are implemented across CommerceBridge, Touchpoint, and Eidos to handle complex B2B commerce scenarios.
 
-**Sophisticated, multi-stage pricing calculation**
-
-Our pricing engine handles:
-
-- **Base Pricing** — product-level base prices
-- **Volume Breaks** — quantity-based discounts
-- **Customer Pricing** — customer-specific rules
-- **Delivery Zones** — location-based pricing
-- **Multi-Stage Modifiers** — compound pricing logic
-- **Caching Strategies** — performance optimization
-
-Key features:
-- Real-time calculation
-- Transparent modifier chains
-- Cache invalidation strategies
-- Historical pricing snapshots
-
-[Learn about Pricing Models →](/core/pricing-models)
-
----
-
-### [Caching Strategies](/core/caching-strategies)
-
-**Intelligent state management**
-
-Multi-layer caching approach:
-
-1. **Redis** — hot data, engagement state, session cache
-2. **MongoDB** — persistent storage, historical data
-3. **OpenSearch** — full-text, spatial, aggregated queries
-4. **In-Memory** — worker-local caches for hot paths
-
-Cache invalidation strategies:
-- Event-driven invalidation
-- Time-based expiry
-- Version-based invalidation
-- Selective cache warming
-
-[Learn about Caching Strategies →](/core/caching-strategies)
-
----
-
-### [Fulfillment](/core/fulfillment)
-
-**Intelligent inventory allocation and delivery orchestration**
-
-Key concepts:
-
-- **Multi-Warehouse** — allocate from multiple locations
-- **Delivery Zones** — spatial filtering and routing
-- **Split Shipments** — optimize across warehouses
-- **Carrier Selection** — rules-based carrier routing
-- **Real-Time Availability** — integrated inventory checks
-
-Fulfillment is integrated with:
-- Pricing (delivery zone affects price)
-- Product configuration (Eidos rules)
-- Customer context (delivery preferences)
-
-[Learn about Fulfillment →](/core/fulfillment)
-
----
-
-## Operations
-
-### [Tenant Isolation](/core/tenant-isolation)
-
-**Multi-tenant security and data separation**
-
-Isolation strategies:
-
-1. **Data Layer** — MongoDB collections namespaced by tenant
-2. **Cache Layer** — Redis keys prefixed with tenant ID
-3. **Search Layer** — OpenSearch indices per tenant
-4. **Processing Layer** — Worker tenant context
-
-Security boundaries:
-- JWT-based authentication with tenant claims
-- Row-level security in databases
-- API gateway tenant validation
-- Worker message tenant verification
-
-[Learn about Tenant Isolation →](/core/tenant-isolation)
-
----
-
-### [Security](/core/security)
-
-**Defense in depth**
-
-Multi-layer security approach:
-
-- **Authentication** — JWT with tenant and user claims
-- **Authorization** — Role-based access control (RBAC)
-- **Data Encryption** — At rest and in transit
-- **Audit Logging** — Complete activity trails
-- **Rate Limiting** — API protection
-- **Input Validation** — Schema-based validation
-
-Key practices:
-- Principle of least privilege
-- Defense in depth
-- Fail secure, not open
-- Audit everything
-
-[Learn about Security →](/core/security)
-
----
-
-### [DevOps Philosophy](/core/devops-philosophy)
-
-**"Starve old workers, evolve ecosystems"**
-
-Our approach to operations:
-
-#### Deployment Strategy
-
-- Deploy new worker versions alongside old
-- Route new work to new workers
-- Let old workers finish their work and exit
-- No rolling restarts, no downtime
-
-#### Evolution, Not Migration
-
-- Systems evolve through worker ecosystems
-- No "big bang" migrations
-- Feature flags enable gradual rollout
-- A/B testing at the worker level
-
-#### Infrastructure as Code
-
-- Everything defined in code
-- Reproducible environments
-- GitOps for deployment
-- Immutable infrastructure
-
-#### Observability
-
-- Structured logging
-- Distributed tracing
-- Metrics and monitoring
-- Real-time alerting
-
-[Learn about DevOps Philosophy →](/core/devops-philosophy)
-
----
-
-## Design Principles
-
-These principles guide all our work:
-
-### Composability
-
-Build small, focused components that work together. Avoid monoliths, embrace modularity.
-
-### Autonomy
-
-Systems should be self-sufficient and autonomous. Minimize dependencies, enable independent operation.
-
-### Clarity
-
-Code should be obvious. Prefer explicit over clever. Documentation is part of the design.
-
-### Evolvability
-
-Systems must change over time. Design for evolution, not just the current requirements.
-
-### Pragmatism
-
-Perfect is the enemy of good. Ship working solutions, iterate based on real usage.
+[Explore all Core Concepts using the sidebar →]
 
 ---
 

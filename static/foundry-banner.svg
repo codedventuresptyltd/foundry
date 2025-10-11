@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" style="background: linear-gradient(135deg, #1a1d24 0%, #2a2f38 100%)">
+  <defs>
+    <!-- Gradient definitions -->
+    <linearGradient id="steelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b95a5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5a6470;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7a8599;stop-opacity:0" />
+      <stop offset="50%" style="stop-color:#7a8599;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#7a8599;stop-opacity:0" />
+    </linearGradient>
+    
+    <!-- Grid pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(122, 133, 153, 0.1)" stroke-width="1"/>
+    </pattern>
+    
+    <!-- Particle glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background grid -->
+  <rect width="1200" height="300" fill="url(#grid)"/>
+  
+  <!-- Abstract forge/anvil shapes -->
+  <g opacity="0.15">
+    <!-- Base anvil shape -->
+    <path d="M 100 180 L 200 180 L 220 200 L 200 220 L 100 220 L 80 200 Z" fill="url(#steelGrad)"/>
+    <rect x="130" y="140" width="40" height="40" fill="url(#steelGrad)"/>
+    
+    <!-- Hammer strike effect -->
+    <path d="M 150 120 L 160 110 L 170 120 L 160 130 Z" fill="#7a8599" opacity="0.6"/>
+  </g>
+  
+  <!-- Abstract system architecture lines -->
+  <g stroke="#7a8599" stroke-width="2" fill="none" opacity="0.4">
+    <!-- Worker nodes -->
+    <circle cx="300" cy="150" r="8" fill="#7a8599"/>
+    <circle cx="500" cy="120" r="8" fill="#7a8599"/>
+    <circle cx="700" cy="180" r="8" fill="#7a8599"/>
+    <circle cx="900" cy="150" r="8" fill="#7a8599"/>
+    
+    <!-- Connection lines -->
+    <path d="M 300 150 L 500 120" stroke-dasharray="5,5"/>
+    <path d="M 500 120 L 700 180" stroke-dasharray="5,5"/>
+    <path d="M 700 180 L 900 150" stroke-dasharray="5,5"/>
+    <path d="M 300 150 L 700 180" stroke-dasharray="5,5" opacity="0.2"/>
+  </g>
+  
+  <!-- Code-like elements -->
+  <g font-family="'Courier New', monospace" font-size="14" fill="#7a8599" opacity="0.3">
+    <text x="350" y="80">function forge()</text>
+    <text x="750" y="100">class Bridge</text>
+    <text x="350" y="240">worker.process()</text>
+    <text x="750" y="260">ecosystem.build()</text>
+  </g>
+  
+  <!-- Glow line across center -->
+  <rect x="0" y="148" width="1200" height="4" fill="url(#glowGrad)" opacity="0.5"/>
+  
+  <!-- Animated particles (represented as static for SVG) -->
+  <g filter="url(#glow)">
+    <circle cx="250" cy="150" r="2" fill="#7a8599" opacity="0.8">
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="450" cy="130" r="2" fill="#7a8599" opacity="0.6">
+      <animate attributeName="opacity" values="0.4;0.9;0.4" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="650" cy="170" r="2" fill="#7a8599" opacity="0.7">
+      <animate attributeName="opacity" values="0.2;0.7;0.2" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="850" cy="155" r="2" fill="#7a8599" opacity="0.5">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Main text -->
+  <g>
+    <text x="600" y="140" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" 
+          font-size="64" font-weight="300" fill="#ffffff" text-anchor="middle" letter-spacing="6">
+      THE FOUNDRY
+    </text>
+    <text x="600" y="185" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" 
+          font-size="24" font-weight="300" fill="#9ca5b5" text-anchor="middle" letter-spacing="2">
+      — by Coded Ventures
+    </text>
+  </g>
+  
+  <!-- Tagline with better contrast and size -->
+  <g>
+    <text x="600" y="225" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" 
+          font-size="18" font-weight="400" fill="#a8b2c4" text-anchor="middle" letter-spacing="3">
+      Where systems are forged
+    </text>
+  </g>
+  
+  <!-- Decorative corner elements -->
+  <g stroke="#7a8599" stroke-width="2" fill="none" opacity="0.3">
+    <path d="M 50 50 L 50 20 L 80 20"/>
+    <path d="M 1150 50 L 1150 20 L 1120 20"/>
+    <path d="M 50 250 L 50 280 L 80 280"/>
+    <path d="M 1150 250 L 1150 280 L 1120 280"/>
+  </g>
+</svg>
+

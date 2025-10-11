@@ -91,16 +91,16 @@ const config = {
         {name: 'apple-mobile-web-app-status-bar-style', content: 'black'},
       ],
       navbar: {
-        title: 'Foundry',
+        title: 'The Foundry',
         logo: {
-          alt: 'Coded Ventures Logo',
+          alt: 'Coded Ventures',
           src: 'CodedVenturesLogo.webp',
         },
         items: [
           {
             to: '/',
             position: 'left',
-            label: 'Overview',
+            label: 'Home',
           },
           {
             type: 'docSidebar',

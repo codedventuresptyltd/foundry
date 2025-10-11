@@ -4,256 +4,86 @@ title: Bridge Architecture
 ---
 
 # Bridge Architecture
-**Pattern:** Centralized orchestration with distributed execution.
+**Pattern:** The central abstraction layer between workers and integrations.
 
-## Problem
+---
 
-Distributed systems face challenges:
-- Scattered integration logic across services
-- Difficult state management
-- Complex service coordination
-- Multi-tenant data isolation complexity
-- Integration duplication
+## The Concept
 
-## Solution
+In distributed systems, you need a way to:
+- Manage state consistently across multiple processors
+- Provide a common API for all operations
+- Centralize integration logic (payments, messaging, ERPs)
+- Enforce multi-tenant isolation
+- Coordinate between stateless workers
 
-The Bridge pattern centralizes orchestration while distributing execution:
+The **Bridge Architecture** solves this by creating a central abstraction layer that sits between your workers (the processors) and your integrations (external systems, databases, caches).
 
 ```mermaid
-flowchart TB
-    subgraph "Presentation & API"
-        UI[UI Layer]
-        API[API Layer]
-    end
-    
-    subgraph "Bridge (Centralized)"
-        STATE[State Management]
-        COORD[Coordination]
-        INT[Integration Foundation]
-    end
-    
-    subgraph "Workers (Distributed)"
-        W1[Worker A]
-        W2[Worker B]
-        W3[Worker C]
-    end
-    
-    UI --> API
-    API --> STATE
-    STATE --> COORD
-    COORD --> INT
-    INT --> W1
-    INT --> W2
-    INT --> W3
-    W1 --> STATE
-    W2 --> STATE
-    W3 --> STATE
+flowchart LR
+    WORKERS[Workers] --> BRIDGE[Bridge]
+    BRIDGE --> INTEGRATIONS[Integrations]
+    INTEGRATIONS --> BRIDGE
+    BRIDGE --> WORKERS
 ```
 
-### Core Principle
+---
 
-> **All shared, reusable integrations live in the Bridge.**
+## Core Principle
+
+> **The Bridge provides a common application interface to abstract integrations.**
+
+Workers don't call databases, payment APIs, or ERPs directly — they call Bridge functions. The Bridge handles the complexity.
 
 This prevents:
 - Integration logic scattered across workers
 - Duplicate integration code
 - Inconsistent multi-tenant handling
-- Service sprawl
-
-## Bridge Responsibilities
-
-### State Ownership
-
-Bridge owns ALL system state:
-
-- **Hot state** — Active engagements, session data (cache layer)
-- **Persistent state** — Historical data, configurations (data store)
-- **Search state** — Full-text indexes, spatial data (search engine)
-
-**Workers are stateless.** All state lives in the Bridge.
-
-### Orchestration
-
-Bridge coordinates operations:
-
-- Routes requests to appropriate handlers
-- Manages workflow state machines
-- Triggers async worker tasks
-- Ensures consistency across distributed operations
-
-### Integration Hub
-
-Bridge provides integration foundation:
-
-- Base functions all workers use
-- Extension points for custom integrations
-- Multi-tenant resource coordination
-- Shared infrastructure access
-
-## Architecture Layers
-
-```mermaid
-flowchart TB
-    subgraph "Bridge Core"
-        direction TB
-        ENGAGE[Engagement Management]
-        PRICE[Pricing Engine]
-        FULFILL[Fulfillment Engine]
-        CACHE[Cache Management]
-        QUEUE[Queue Management]
-    end
-    
-    subgraph "Infrastructure"
-        CACHEDB[(Cache Layer)]
-        DATASTORE[(Data Store)]
-        SEARCH[(Search Engine)]
-        MQ[Message Queue]
-    end
-    
-    subgraph "Extensions"
-        EXT1[Custom Integration A]
-        EXT2[Custom Integration B]
-        EXT3[Custom Logic C]
-    end
-    
-    ENGAGE --> CACHEDB
-    ENGAGE --> DATASTORE
-    PRICE --> CACHEDB
-    FULFILL --> DATASTORE
-    FULFILL --> SEARCH
-    CACHE --> CACHEDB
-    QUEUE --> MQ
-    
-    ENGAGE -.Extended by.-> EXT1
-    PRICE -.Extended by.-> EXT2
-    QUEUE -.Extended by.-> EXT3
-```
-
-## Why Centralize the Bridge?
-
-### Benefits
-
-**Single source of truth:**
-- One place for state management
-- One place for core business logic
-- One place for multi-tenant coordination
-
-**Easier multi-tenancy:**
-- Tenant context enforced centrally
-- Data isolation managed in one place
-- Configuration centralized
-
-**Simpler workers:**
-- Workers don't need database logic
-- Workers don't need cache management
-- Workers don't need tenant validation
-- Workers just execute business tasks
-
-**Better extensibility:**
-- Extend Bridge once, all workers benefit
-- Add integration in one place
-- Consistent behavior across ecosystem
-
-### Trade-offs
-
-**Not a silver bullet:**
-- Bridge can become bottleneck (mitigated by caching)
-- Single point of failure (mitigated by redundancy)
-- Potential for Bridge bloat (mitigated by extension pattern)
-
-## Extension Pattern
-
-### Base Bridge (Minimal)
-
-Provides only core operations:
-- Engagement CRUD
-- Pricing calculation
-- Fulfillment allocation
-- State management
-- Queue operations
-
-### Extended Bridge (Your Ecosystem)
-
-Add your specific needs:
-
-```ts
-export class EcosystemBridge extends BaseBridge {
-  // Inherit all core functions
-  
-  // Add your integrations
-  async syncToErp(data: unknown) { }
-  async processPayment(amount: number) { }
-  async sendNotification(message: string) { }
-  
-  // Add your business logic
-  async customWorkflow(engagement: Engagement) { }
-}
-```
-
-### Workers Use Extended Bridge
-
-```ts
-export class MyWorker extends BaseWorker {
-  private bridge: EcosystemBridge  // Your extended version
-  
-  async work(job: JobCard) {
-    // Use core functions (inherited)
-    const engagement = await this.bridge.getEngagement(job.payload.id)
-    
-    // Use your custom functions
-    await this.bridge.syncToErp(engagement)
-    await this.bridge.sendNotification('Order processed')
-  }
-}
-```
-
-## Do / Don't
-
-### ✅ Do
-
-- Centralize state in the Bridge
-- Keep workers stateless
-- Extend the Bridge for custom logic
-- Use the Bridge for all data access
-- Enforce tenant context in Bridge
-- Cache aggressively
-- Make Bridge functions tenant-aware
-
-### ❌ Don't
-
-- Put state in workers
-- Create side-services for integrations
-- Access infrastructure directly from workers
-- Duplicate integration logic
-- Mix tenant-specific logic in base Bridge
-- Bypass the Bridge from workers
-- Create worker-to-worker dependencies
-
-## Comparison
-
-### Bridge Pattern vs Microservices
-
-| Bridge Pattern | Microservices |
-|----------------|---------------|
-| Centralized state | Distributed state |
-| Stateless workers | Stateful services |
-| Queue-based async | HTTP/gRPC sync |
-| Extension through inheritance | Service proliferation |
-| Single orchestrator | Service mesh |
-| Simpler multi-tenancy | Complex tenant routing |
-
-Both are valid. Bridge pattern optimizes for:
-- Multi-tenant SaaS
-- Complex state management
-- Frequent deployments
-- Worker specialization
-
-## IP Safety
-
-This documentation describes:
-- **Public:** Bridge pattern, architecture principles, extension model
-- **Private (not shown):** Specific Bridge implementations, infrastructure details, tenant configurations
+- Direct coupling to external systems
 
 ---
 
-**Bridge Architecture: Centralize orchestration, distribute execution.**
+## What the Bridge Provides
+
+### 1. Common API Interface
+Workers call Bridge functions instead of directly accessing systems. The Bridge abstracts the complexity of integrations, state management, and multi-tenant coordination.
+
+### 2. State Management
+The Bridge owns all persistent and cached state. Workers are stateless (between instances) and fetch everything they need through the Bridge.
+
+### 3. Integration Foundation
+Shared integrations (payments, shipping, messaging) are implemented once in the Bridge and reused by all workers.
+
+### 4. Multi-Tenant Coordination
+The Bridge enforces tenant isolation, manages tenant-specific configurations, and ensures secure data access.
+
+---
+
+## Why This Matters
+
+**Without the Bridge:** Each worker would need to implement its own database connections, caching strategies, payment integrations, and multi-tenant logic. This leads to duplication, inconsistency, and maintenance nightmares.
+
+**With the Bridge:** Workers stay focused on business logic. They call simple Bridge functions like `getEngagement()`, `calculatePrice()`, or `allocateInventory()`, and the Bridge handles all the complexity.
+
+---
+
+## Extend, Don't Modify
+
+The Bridge is designed to be extended with your specific integrations and business logic. You create a custom Bridge that inherits from the base and adds your ERP sync, custom pricing rules, or specialized workflows.
+
+This keeps the core clean and upgradeable while giving you complete flexibility.
+
+---
+
+## Learn More
+
+For detailed implementation guidance, see:
+
+- **[The Bridge](/commercebridge/bridge)** — Detailed responsibilities and interfaces
+- **[Core Bridge API](/commercebridge/core-bridge)** — Complete function reference
+- **[Custom Ecosystems](/commercebridge/integrations)** — How to extend the Bridge
+- **[CommerceBridge Architecture](/commercebridge/architecture)** — Complete system architecture
+
+---
+
+**Bridge Architecture: One interface, infinite integrations.**

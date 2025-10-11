@@ -1,140 +1,118 @@
 ---
 sidebar_position: 5
-title: Pricing Models
+title: Pricing
 ---
 
-# Pricing Models
-**Concept:** Multi-stage price calculation with transparent modifiers.
+# Pricing
+**Concept:** Flexible rule-based pricing engine that adapts to any ERP system.
 
-## Problem
+---
 
-Simple pricing (one price per product) doesn't work for B2B:
-- Volume discounts needed
-- Customer-specific contracts
-- Location-based pricing
-- Promotional pricing
-- Complex business rules
+## The Challenge
 
-## Solution
+Every ERP system has its own pricing rules:
+- Volume breaks, tier pricing, contract pricing
+- Customer-specific discounts and surcharges
+- Location-based pricing and shipping costs
+- Promotional pricing and time-sensitive offers
+- Payment term discounts
+- Product bundle rules
 
-Multi-stage pricing model where base price flows through a modifier chain:
+**The problem:** Each ERP does pricing differently. Building custom integration logic for every ERP is unsustainable.
+
+---
+
+## The Solution: Universal Pricing Engine
+
+Instead of trying to replicate every ERP's pricing logic, we provide a **flexible rule-based engine** that can represent pricing rules from any system.
+
+### How It Works
+
+**1. Sync Rules from ERP**
+Customer's pricing rules and base prices are pulled from their ERP system (SAP, NetSuite, custom system, etc.)
+
+**2. Convert to Our Model**
+ERP rules are converted into a **snapshot** using our pricing model representation. This snapshot contains:
+- Base prices
+- Modifier rules (volume, customer, zone, promo, etc.)
+- Rule priorities and conditions
+- Calculation methods
+
+**3. Store as Configuration**
+The snapshot is stored as tenant-specific pricing configuration.
+
+**4. Engine Calculates**
+When Touchpoint (or any system) needs a price, our pricing engine:
+- Loads the tenant's pricing snapshot
+- Applies rules in priority order
+- Calculates final price
+- Returns transparent breakdown
+
+---
+
+## Why This Works
+
+### Decoupling
+Touchpoint doesn't need to understand SAP vs NetSuite pricing. It just calls our pricing engine with product, customer, quantity, and zone. The engine handles the rest.
+
+### Flexibility
+Any ERP's pricing rules can be represented in our model. New rule types can be added without changing core engine.
+
+### Performance
+Pricing snapshots are pre-calculated and stored. Real-time pricing is fast because we're not calling the ERP for every calculation.
+
+### Transparency
+Every price calculation returns a full breakdown of modifiers applied, so customers see exactly why they're paying a specific price.
+
+---
+
+## Pricing Flow
 
 ```mermaid
 flowchart LR
-    BASE[Base Price] --> VOL[Volume<br/>Modifier]
-    VOL --> CUST[Customer<br/>Modifier]
-    CUST --> ZONE[Zone<br/>Modifier]
-    ZONE --> PROMO[Promo<br/>Modifier]
-    PROMO --> FINAL[Final Price]
+    ERP[Customer's ERP] -->|Sync rules| SNAPSHOT[Pricing Snapshot]
+    SNAPSHOT -->|Store| CONFIG[Tenant Config]
+    CONFIG -->|Load| ENGINE[Pricing Engine]
+    UI[Touchpoint] -->|Request price| ENGINE
+    ENGINE -->|Calculated price| UI
 ```
-
-Each modifier:
-- Has a type and reason
-- Applies a specific calculation
-- Is ordered by priority
-- Is fully transparent
-
-## Modifier Types
-
-### Volume Breaks
-
-Quantity-based tier pricing:
-
-| Quantity | Discount |
-|----------|----------|
-| 1-9 | Base price |
-| 10-49 | 10% off |
-| 50-99 | 15% off |
-| 100+ | 20% off |
-
-### Customer-Specific
-
-Contract or negotiated pricing:
-- Custom price lists
-- Account-level discounts
-- Payment term adjustments
-- Relationship-based pricing
-
-### Zone-Based
-
-Location affects price:
-- Remote delivery upcharges
-- Regional pricing variations
-- Cross-border adjustments
-- Logistics cost factors
-
-### Promotional
-
-Time-limited pricing:
-- Seasonal discounts
-- Clearance pricing
-- Bundle offers
-- Limited-time promotions
-
-### Custom Business Rules
-
-Tenant-specific logic:
-- Industry-specific pricing
-- Regulatory adjustments
-- Market-based dynamic pricing
-- Inventory-level pricing
-
-## Calculation Pattern
-
-```ts
-// Start with base
-let price = product.basePrice // $100
-
-// Apply volume break
-if (quantity >= 100) {
-  price = price * 0.80  // 20% off
-} // $80
-
-// Apply customer discount
-if (customerTier === 'platinum') {
-  price = price * 0.95  // Additional 5% off
-} // $76
-
-// Apply zone upcharge
-if (deliveryZone === 'remote') {
-  price = price + 10  // Remote delivery fee
-} // $86
-
-// Final price: $86
-```
-
-## Transparency
-
-All modifiers visible to customer:
-
-```
-Base Price:                    $100.00
-Volume Discount (20%):         -$20.00
-Customer Discount (5%):        -$4.00
-Delivery Upcharge:             +$10.00
-────────────────────────────────────
-Final Price:                   $86.00
-```
-
-## Caching Strategy
-
-Cache calculated prices with context-aware keys:
-
-**Cache key:** `price:{tenant}:{product}:{customer}:{qty}:{zone}`
-
-**TTL varies by stability:**
-- Base prices: Long TTL (stable)
-- Customer prices: Medium TTL (occasional changes)
-- Calculated prices: Short TTL (volatile)
-
-**Invalidation:** When any input changes
-
-## IP Safety
-
-This describes:
-- **Public:** Pricing model concept, modifier types, calculation pattern
-- **Private (not shown):** Specific algorithms, price calculation code, tenant pricing rules
 
 ---
 
-**Pricing Models: Transparent, flexible, and fast.**
+## Example: Multi-Stage Calculation
+
+```mermaid
+flowchart LR
+    BASE[Base Price<br/>$100] --> VOL[Volume Rule<br/>-10%]
+    VOL --> CUST[Customer Rule<br/>-5%]
+    CUST --> ZONE[Zone Rule<br/>+$8]
+    ZONE --> FINAL[Final Price<br/>$93]
+```
+
+Each modifier is a rule from the pricing snapshot. The engine applies them in order, creating a transparent calculation chain.
+
+---
+
+## Rule Types Supported
+
+Our pricing model can represent:
+- **Volume/Tier Pricing** — Quantity-based breaks
+- **Customer-Specific** — Contract pricing, negotiated rates
+- **Zone-Based** — Geographic pricing, shipping costs
+- **Promotional** — Time-limited discounts
+- **Payment Terms** — Net-30 discounts, early payment incentives
+- **Product Mix** — Bundle pricing, cross-product rules
+- **Custom Rules** — Tenant-defined logic
+
+---
+
+## Learn More
+
+For detailed implementation, see:
+
+- **[Pricing Engine](/commercebridge/pricing-engine)** — Complete engine documentation
+- **[Core Bridge API](/commercebridge/core-bridge)** — Pricing operations reference
+
+---
+
+**Pricing Models: Any ERP's rules, one engine.**

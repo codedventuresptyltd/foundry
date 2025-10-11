@@ -22,9 +22,9 @@ An **Engagement** represents the full lifecycle of a commerce interaction, from 
 - **customerId** — The customer involved in this engagement
 - **type** — What kind of engagement this is (quote, order, subscription)
 - **status** — Current state (draft, active, processing, complete, cancelled)
-- **lineItems** — List of products/services in this engagement
-- **pricing** — The calculated pricing for this engagement
-- **fulfillment** — How this will be fulfilled (warehouses, delivery)
+- **lineItems** — List of Line Items in this engagement (see [Line Item](#line-item))
+- **pricing** — Price Cards for all line items (see [Price Card](#price-card))
+- **fulfillment** — Fulfillment Plan for delivery (see [Fulfillment Plan](#fulfillment-plan))
 - **createdAt** — When this engagement was created
 - **updatedAt** — When this engagement was last modified
 - **metadata** — Additional custom data specific to the tenant
@@ -75,66 +75,6 @@ A **Line Item** represents a single product or service within an engagement.
 - **configuration** — Optional: Product configuration (if configurable)
 - **allocation** — Where this will be fulfilled from
 - **notes** — Optional notes or special instructions
-
----
-
-## Pricing Result
-
-A **Pricing Result** contains the calculated pricing for products or engagements.
-
-**Properties:**
-
-- **basePrice** — Starting price before any adjustments
-- **modifiers** — List of all price modifications applied
-- **finalPrice** — Final price after all modifiers
-- **currency** — Currency code (USD, AUD, etc.)
-- **breakdown** — Detailed breakdown of each modifier
-- **calculatedAt** — When this price was calculated
-- **validUntil** — Optional: When this price expires
-- **cacheKey** — Key used for caching this price
-
-**Example:**
-
-Base price of $100, with a volume discount modifier (-15%) and delivery zone modifier (+5%), resulting in final price of $90.
-
----
-
-## Price Modifier
-
-A **Price Modifier** represents a single adjustment to a price.
-
-**Properties:**
-
-- **type** — What kind of modifier (volume-discount, zone-upcharge, customer-discount)
-- **value** — The modification amount (percentage or fixed amount)
-- **operation** — How to apply (multiply, add, subtract)
-- **reason** — Human-readable explanation
-- **priority** — Order in which to apply (lower numbers first)
-
-**Example:**
-
-Type: "volume-discount", Value: 0.15 (15%), Operation: "multiply", Reason: "Volume discount for 100+ units"
-
----
-
-## Allocation Result
-
-An **Allocation Result** shows how inventory was allocated for an order.
-
-**Properties:**
-
-- **success** — Whether allocation succeeded
-- **allocations** — List of warehouse allocations
-- **reservationId** — Identifier for this inventory reservation
-- **expiresAt** — When this reservation expires
-- **splitShipment** — Whether multiple warehouses are involved
-
-**Each allocation contains:**
-
-- **warehouseId** — Which warehouse
-- **productId** — Which product
-- **quantity** — How many units from this warehouse
-- **estimatedShipDate** — When this can ship
 
 ---
 
@@ -280,59 +220,40 @@ A **Delivery Zone** represents a geographic area for delivery.
 
 ---
 
-## Tenant Config
+## Price Card
 
-**Tenant Config** contains tenant-specific settings.
-
-**Properties:**
-
-- **tenantId** — Unique tenant identifier
-- **name** — Tenant name
-- **features** — Enabled features for this tenant
-- **settings** — Custom settings
-- **integrations** — External system credentials
-- **branding** — UI branding configuration
-- **limits** — Rate limits and quotas
-- **isActive** — Whether tenant is active
-
----
-
-## Pricing Context
-
-**Pricing Context** contains all information needed to calculate a price.
+A **Price Card** represents the complete pricing calculation result for a product, including all applied rules and modifiers.
 
 **Properties:**
 
-- **productId** — Which product to price
-- **quantity** — How many units
-- **customerId** — Who is buying
-- **deliveryZone** — Where it's being delivered
-- **uom** — Unit of measure
-- **date** — Optional: Pricing date (for historical prices)
-- **configuration** — Optional: Product configuration
-- **promoCode** — Optional: Promotional code
+- **status** — Pricing status ('OK', 'POA', 'DISALLOW', 'NOT_FOUND')
+- **unitCents** — Final unit price in cents
+- **qty** — Quantity being priced
+- **groupQty** — Optional: Group quantity for aggregate discounts
+- **modelPath** — Product model identifier
+- **canonicalModelPath** — Canonical product path
+- **baseAtom** — Base price atom from pricing snapshot
+- **subtotalCents** — Line subtotal (unit × qty)
+- **totalCents** — Total after all discounts
+- **discountCents** — Total discount amount
+- **breakingFee** — Fee for breaking packs/units
+- **aggregateDiscounts** — Discounts applied at aggregate level
+- **reason** — Explanation for special status (POA, DISALLOW)
+- **rrpCents** — Recommended retail price
+- **slabs** — Breakdown by UOM (for multi-UOM products)
+- **provenance** — Traceability information (snapshot ID, rules applied, atoms used)
 
----
+**Purpose:**
 
-## Availability Query
+The Price Card is the result of the pricing engine calculation. It contains not just the final price, but complete transparency into how that price was calculated, which rules were applied, and where the base price came from.
 
-**Availability Query** asks if a product is available.
+**Example Use:**
 
-**Properties:**
-
-- **productId** — Which product
-- **quantity** — How many units needed
-- **deliveryZone** — Where it needs to be delivered
-- **uom** — Unit of measure
-- **requestedDate** — Optional: When it's needed by
-
-**Response:**
-
-- **available** — True/false
-- **quantityAvailable** — How many units are available
-- **warehouses** — Which warehouses have stock
-- **estimatedDelivery** — When it could be delivered
-- **alternatives** — Alternative products if unavailable
+When Touchpoint requests pricing for a product, it receives a Price Card that shows:
+- The final calculated price
+- All discounts and surcharges applied
+- Which pricing rules were triggered
+- Complete audit trail for the calculation
 
 ---
 
@@ -352,84 +273,6 @@ A **Delivery Zone** represents a geographic area for delivery.
 - **page** — Which page of results
 - **pageSize** — Results per page
 - **tenantId** — Tenant context
-
----
-
-## Queue Stats
-
-**Queue Stats** provides metrics about a message queue.
-
-**Properties:**
-
-- **queueName** — Name of the queue
-- **messageCount** — Total messages in queue
-- **consumerCount** — Number of active consumers
-- **messagesPerSecond** — Processing rate
-- **averageProcessingTime** — Average time to process a message
-- **errorRate** — Percentage of failed messages
-- **oldestMessage** — Age of oldest message in queue
-
----
-
-## Worker Metrics
-
-**Worker Metrics** tracks worker performance.
-
-**Properties:**
-
-- **workerId** — Which worker
-- **jobsProcessed** — Total jobs completed
-- **jobsFailed** — Total jobs failed
-- **averageJobTime** — Average processing time
-- **successRate** — Percentage successful
-- **uptime** — How long worker has been running
-- **lastBeat** — Last heartbeat timestamp
-- **currentLoad** — Current job processing count
-
----
-
-## Engagement Event
-
-An **Engagement Event** represents something that happened to an engagement (audit trail).
-
-**Properties:**
-
-- **id** — Event identifier
-- **engagementId** — Which engagement
-- **type** — Event type (created, updated, status-changed, etc.)
-- **timestamp** — When event occurred
-- **userId** — Who triggered the event
-- **changes** — What changed
-- **metadata** — Additional event data
-
----
-
-## Tenant Feature
-
-A **Tenant Feature** represents a capability that can be enabled/disabled per tenant.
-
-**Properties:**
-
-- **name** — Feature name (e.g., 'advanced-pricing', 'multi-warehouse')
-- **enabled** — Whether feature is enabled
-- **config** — Feature-specific configuration
-- **enabledAt** — When feature was enabled
-- **enabledBy** — Who enabled the feature
-
----
-
-## Cache Entry
-
-A **Cache Entry** represents cached data in Redis.
-
-**Properties:**
-
-- **key** — Cache key
-- **value** — Cached data
-- **ttl** — Time to live (seconds until expiration)
-- **createdAt** — When cached
-- **expiresAt** — When it expires
-- **tags** — Optional: Tags for grouped invalidation
 
 ---
 

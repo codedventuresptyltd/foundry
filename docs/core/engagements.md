@@ -1,32 +1,47 @@
 ---
-sidebar_position: 3
+sidebar_position: 5
 title: Engagements
 ---
 
 # Engagements
-Lifecycle containers that model commerce as conversations, not isolated transactions.
+**Concept:** Lifecycle containers that model commerce as conversations, not isolated transactions.
 
-## Responsibilities
+---
 
-### Full Lifecycle Tracking
-- Captures the entire customer journey from inquiry to completion
-- Maintains state across multiple interactions
-- Preserves history and context throughout
-- Links related activities into a cohesive narrative
+## What is an Engagement?
 
-### State Container
-- Holds all engagement data (customer, products, pricing, fulfillment)
-- Tracks status progression through lifecycle stages
-- Maintains audit trail of all changes
-- Provides snapshot at any point in time
+An **engagement** is the complete commerce conversation between your business and a customer. It's not just an order — it's the entire journey:
 
-### Workflow Coordination
-- Orchestrates multi-step processes
-- Manages transitions between states
-- Triggers appropriate workers for each stage
-- Ensures business rules are enforced
+- Customer browses products
+- Requests a quote
+- Negotiates pricing
+- Configures products
+- Places an order
+- Inventory is allocated
+- Payment is processed
+- Items are shipped
+- Delivery is confirmed
 
-## Lifecycle
+All of this happens within one **engagement**. Every interaction, every state change, every decision is captured and preserved.
+
+---
+
+## Why Not Just "Orders"?
+
+Traditional e-commerce has:
+- **Cart** (temporary, often lost)
+- **Order** (transactional, created at checkout)
+- **Fulfillment** (separate system, disconnected from order context)
+
+B2B commerce needs:
+- **Engagement** (persistent conversation that starts with first product view)
+- Complete context throughout the entire journey
+- Seamless progression from quote to order to fulfillment
+- Full audit trail of decisions and changes
+
+---
+
+## Engagement Lifecycle
 
 ```mermaid
 stateDiagram-v2
@@ -43,200 +58,60 @@ stateDiagram-v2
     Cancelled --> [*]
 ```
 
-### 1. Creation
-- Engagement created in **draft** state
-- Customer and tenant context established
-- Initial data captured (products, quantities)
-- Unique identifier assigned
+Each status represents a stage in the conversation. The engagement carries all context forward through each transition.
 
-### 2. Active State
-- Customer building cart or requesting quote
-- Dynamic pricing calculations
-- Real-time availability checks
-- State persists across sessions
+---
 
-### 3. Processing
-- Order placement triggered
-- Inventory allocated
-- Payment processing initiated
-- Workers handle async tasks
+## What Lives in an Engagement?
 
-### 4. Confirmation
-- Inventory confirmed
-- Payment confirmed
-- Customer notified
-- Fulfillment initiated
+- **Identity** — Customer, tenant, channel information
+- **Line Items** — Products, quantities, configurations
+- **Pricing** — Calculations, modifiers, customer-specific rules
+- **Fulfillment** — Inventory allocation, warehouse assignments, tracking
+- **Metadata** — Custom fields, notes, references (PO numbers, delivery instructions)
+- **Events** — Complete audit trail of every change
 
-### 5. Fulfillment
-- Items shipped from warehouse(s)
-- Tracking information captured
-- Status updates sent
-- Delivery in progress
+Everything needed to understand and complete the commerce conversation.
 
-### 6. Completion
-- Delivery confirmed
-- Final state captured
-- Historical record preserved
-- Engagement closed
+---
 
-## Interfaces (Public-Safe)
+## How Engagements Work Across Systems
 
-```ts
-export interface Engagement {
-  id: string
-  tenantId: string
-  customerId: string
-  type: 'quote' | 'order' | 'subscription'
-  status: EngagementStatus
-  lineItems: LineItem[]
-  pricing?: PricingResult
-  fulfillment?: FulfillmentPlan
-  metadata?: Record<string, unknown>
-  createdAt: Date
-  updatedAt: Date
-}
+### In CommerceBridge
+The Bridge manages engagement state, lifecycle transitions, and coordinates workers to process engagement-related tasks.
 
-export type EngagementStatus = 
-  | 'draft' 
-  | 'active' 
-  | 'processing' 
-  | 'confirmed'
-  | 'fulfilled'
-  | 'complete' 
-  | 'cancelled'
+### In Touchpoint
+The UI displays and updates engagements in real-time. As customers add products or change quantities, the engagement updates. When they checkout, the engagement transitions from 'active' to 'processing'.
 
-export interface LineItem {
-  id: string
-  productId: string
-  quantity: number
-  uom: string
-  configuration?: Record<string, unknown>
-}
-```
+### In Workers
+Workers receive engagement IDs in their job cards, fetch the engagement from the Bridge, perform their task (price calculation, inventory allocation, notification), and update the engagement state.
 
-## Example (Pseudo)
+---
 
-### Creating an Engagement
+## Benefits
 
-```ts
-const engagement = await bridge.createEngagement({
-  customerId: 'customer-123',
-  type: 'quote',
-  lineItems: [
-    { productId: 'product-456', quantity: 100, uom: 'each' }
-  ]
-})
-// Status: 'draft'
-```
+**1. Complete Context**
+Every system has access to the full conversation history.
 
-### Progressing Through Lifecycle
+**2. Seamless Workflow**
+Quote evolves into order without data loss or system handoffs.
 
-```ts
-// Customer reviews quote, adds more items
-await bridge.updateEngagement(engagement.id, {
-  status: 'active',
-  lineItems: [...engagement.lineItems, newItem]
-})
+**3. Real-Time Sync**
+UI, workers, and integrations all work with the same engagement model.
 
-// Customer places order
-await bridge.updateEngagement(engagement.id, {
-  status: 'processing'
-})
+**4. Audit Trail**
+Every action is recorded for compliance and debugging.
 
-// Worker allocates inventory
-await bridge.updateEngagement(engagement.id, {
-  status: 'confirmed',
-  allocation: allocationResult
-})
+---
 
-// Worker marks shipped
-await bridge.updateEngagement(engagement.id, {
-  status: 'fulfilled',
-  tracking: trackingInfo
-})
+## Learn More
 
-// Delivery complete
-await bridge.finalizeEngagement(engagement.id)
-// Status: 'complete'
-```
+For detailed implementation, see:
 
-### Retrieving Engagement History
-
-```ts
-const events = await bridge.getEngagementHistory(engagement.id)
-// Returns audit trail of all state changes
-```
-
-## Why Engagements vs Orders
-
-| Traditional Approach | Engagement Approach |
-|---------------------|---------------------|
-| Order is the primary entity | Engagement contains multiple potential orders |
-| State resets with each order | State persists across the full journey |
-| Quote and order are separate | Quote evolves into order seamlessly |
-| Limited historical context | Full conversation history |
-| Hard to model complex B2B flows | Natural fit for multi-step processes |
-
-## Extension Points
-
-### Custom Engagement Types
-
-```ts
-// Define your own engagement types
-type CustomEngagementType = 
-  | 'quote' 
-  | 'order' 
-  | 'subscription'
-  | 'contract'  // Your custom type
-  | 'rfq'       // Your custom type
-```
-
-### Custom Metadata
-
-```ts
-// Add tenant-specific data
-await bridge.updateEngagement(engagement.id, {
-  metadata: {
-    customerPO: 'PO-12345',
-    deliveryInstructions: 'Loading dock B',
-    accountManager: 'user-789'
-  }
-})
-```
-
-### Custom Lifecycle Hooks
-
-Extend Bridge to add custom logic at lifecycle transitions:
-
-```ts
-export class CustomBridge extends BaseBridge {
-  async updateEngagement(id: string, updates: Partial<Engagement>) {
-    // Custom validation before update
-    if (updates.status === 'processing') {
-      await this.validateOrderRequirements(id)
-    }
-    
-    // Call base implementation
-    const updated = await super.updateEngagement(id, updates)
-    
-    // Custom logic after update
-    if (updated.status === 'confirmed') {
-      await this.notifyWarehouse(updated)
-    }
-    
-    return updated
-  }
-}
-```
-
-## IP Safety
-
-This documentation describes the engagement **concept** and **interface**, not:
-- Specific state machine implementations
-- Database schemas
-- Cache key structures
-- Event payloads
-- Tenant-specific workflows
+- **[The Bridge](/commercebridge/bridge)** — How the Bridge manages engagements
+- **[Core Bridge API](/commercebridge/core-bridge)** — Engagement operations reference
+- **[Workers](/commercebridge/workers)** — How workers process engagements
+- **[Touchpoint Integration](/touchpoint/commercebridge-integration)** — How Touchpoint uses engagements
 
 ---
 

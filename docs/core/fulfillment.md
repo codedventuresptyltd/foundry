@@ -1,160 +1,112 @@
 ---
 sidebar_position: 7
-title: Fulfillment Concepts
+title: Fulfillment
 ---
 
-# Fulfillment Concepts
-**Concept:** Multi-warehouse inventory management and delivery orchestration.
+# Fulfillment
+**Concept:** Intelligent multi-warehouse inventory allocation and delivery optimization.
 
-## Core Idea
+---
 
-Modern B2B requires sophisticated fulfillment:
-- Products stored in multiple locations
-- Customers in various geographic areas
-- Different delivery requirements
-- Cost optimization needs
+## The Challenge
 
-**Solution:** Intelligent allocation system that:
-- Knows what's where
-- Understands delivery constraints
-- Optimizes for cost, speed, and customer preference
-- Handles complex scenarios (split shipments, backorders)
+B2B fulfillment is complex:
+- Multiple warehouses across different regions
+- Delivery zones with different capabilities
+- Split shipments from multiple locations
+- Customer delivery preferences
+- Cost vs speed optimization
+- Real-time inventory visibility
+
+---
+
+## The Solution: Zone-Based Allocation
+
+Instead of simple "is it in stock?" checks, the system performs intelligent allocation:
+
+1. **Identify delivery zone** — Where is the customer?
+2. **Find serving warehouses** — Which warehouses can deliver there?
+3. **Check inventory** — What's available at each warehouse?
+4. **Optimize allocation** — Minimize shipments, cost, or delivery time
+5. **Create fulfillment plan** — Multi-warehouse splits if needed
+
+```mermaid
+flowchart LR
+    CUST[Customer<br/>Location] --> ZONE[Delivery<br/>Zone]
+    ZONE --> WH1[Warehouse A<br/>Stock: 50]
+    ZONE --> WH2[Warehouse B<br/>Stock: 75]
+    WH1 --> ALLOC[Allocation<br/>Decision]
+    WH2 --> ALLOC
+    ALLOC --> PLAN[Fulfillment<br/>Plan]
+```
+
+---
 
 ## Key Concepts
 
 ### Delivery Zones
 
-Geographic areas defining where warehouses can deliver:
+Geographic areas that define:
+- Which warehouses can deliver there
+- Delivery capabilities (same-day, next-day, standard)
+- Shipping costs and restrictions
+- Service level agreements
 
-```mermaid
-graph TB
-    W1[Warehouse A<br/>Chicago] -.Serves.-> Z1[Midwest Zone]
-    W1 -.Serves.-> Z2[Northeast Zone]
-    
-    W2[Warehouse B<br/>Dallas] -.Serves.-> Z3[Southwest Zone]
-    
-    W3[Warehouse C<br/>LA] -.Serves.-> Z4[West Coast Zone]
-```
+### Warehouse Networks
 
-**Zone properties:**
-- Geographic boundaries
-- Delivery time estimates
-- Associated warehouses
-- Pricing adjustments
+Multiple warehouses work together:
+- Each has its own inventory
+- Each serves specific zones
+- Allocation optimizes across the network
+- Split shipments when necessary
 
-### Spatial Filtering
+### Allocation Strategies
 
-Filter products/warehouses by deliverability:
-
-**Customer in Chicago:**
-1. System determines delivery zone (Midwest)
-2. Filters warehouses serving Midwest
-3. Shows only products available from those warehouses
-4. Calculates delivery time estimates
-
-**Result:** Customer only sees deliverable options.
-
-### Multi-Warehouse Allocation
-
-Optimize inventory allocation:
-
-**Scenario:** Order 150 units to Chicago
-
-**Options:**
-- Warehouse A (Milwaukee): 100 units, 1-day delivery
-- Warehouse B (Indianapolis): 60 units, 2-day delivery
-
-**Optimization:**
-- **Option 1:** Split shipment (100 from A, 50 from B)
-- **Option 2:** Wait and consolidate
-- **Option 3:** Fulfill 100 now, backorder 50
-
-**Decision factors:**
-- Customer preference
-- Cost comparison
-- Delivery urgency
-- Product characteristics
-
-### Split Shipment Handling
-
-When one warehouse isn't enough:
-
-```mermaid
-flowchart LR
-    ORDER[Order: 150 units] --> OPT{Can fulfill<br/>from one?}
-    OPT -->|Yes| SINGLE[Single<br/>Warehouse]
-    OPT -->|No| SPLIT[Split<br/>Shipment]
-    
-    SPLIT --> W1[Warehouse A<br/>100 units]
-    SPLIT --> W2[Warehouse B<br/>50 units]
-    
-    SINGLE --> DONE[Fulfillment Plan]
-    W1 --> DONE
-    W2 --> DONE
-```
-
-## Optimization Criteria
-
-### 1. Minimize Shipments
-Prefer single warehouse when possible.
-
-### 2. Minimize Distance
-Choose closest warehouse to customer.
-
-### 3. Minimize Cost
-Factor in shipping costs.
-
-### 4. Minimize Time
-Meet delivery date requirements.
-
-### 5. Balance Load
-Distribute across warehouse network.
-
-## Inventory Reservation
-
-```mermaid
-stateDiagram-v2
-    [*] --> Available: Stock available
-    Available --> Reserved: Customer initiates checkout
-    Reserved --> Allocated: Order confirmed
-    Reserved --> Available: Timeout or cancel
-    Allocated --> Shipped: Order ships
-    Shipped --> [*]: Complete
-```
-
-**Reservation lifecycle:**
-1. **Available** — Stock in warehouse
-2. **Reserved** — Held for pending order (15-30 min timeout)
-3. **Allocated** — Committed to confirmed order
-4. **Shipped** — Out for delivery
-5. **Complete** — Delivered
-
-## Real-Time Availability
-
-Availability is dynamic, not static:
-
-**Not just "in stock" or "out of stock":**
-
-- Stock levels by warehouse
-- Reserved vs available
-- Incoming shipments
-- Lead times
-- Alternative products
-
-**Example response:**
-```
-Product X:
-- 75 units available now (Warehouse A)
-- 25 units available in 3 days (incoming)
-- Alternative: Product Y, 200 units available
-```
-
-## IP Safety
-
-This describes:
-- **Public:** Fulfillment concepts, optimization patterns, zone model
-- **Private (not shown):** Warehouse locations, allocation algorithms, inventory schemas
+Different optimization approaches:
+- **Minimize shipments** — Fulfill from fewest warehouses
+- **Minimize cost** — Choose cheapest warehouse/shipping
+- **Minimize time** — Fastest delivery route
+- **Balance load** — Distribute across warehouses
 
 ---
 
-**Fulfillment: Right product, right place, right time.**
+## How It Works in Practice
+
+**Example Scenario:**
+Customer in Chicago orders 100 units of Product X.
+
+**System evaluates:**
+- Chicago is in "Midwest" delivery zone
+- Midwest zone is served by 3 warehouses: Milwaukee (60 units), Indianapolis (50 units), Detroit (40 units)
+- Milwaukee can fulfill 60 units
+- Indianapolis can fulfill remaining 40 units
+- Result: Split shipment from 2 warehouses
+
+**Alternative strategy:**
+If customer prefers single shipment, system could allocate from Indianapolis (50 units) and backorder the rest, or route to a different warehouse network.
+
+---
+
+## Integration with Other Systems
+
+### With Engagements
+Fulfillment allocation is stored in the engagement. As allocation happens, the engagement updates with warehouse assignments, tracking info, and delivery estimates.
+
+### With Pricing
+Delivery zone affects pricing (shipping costs, zone surcharges). Pricing and fulfillment work together to give customers accurate total costs.
+
+### With Inventory
+Real-time inventory checks ensure allocations are valid. Inventory reservations are created during allocation and released if the engagement is cancelled.
+
+---
+
+## Learn More
+
+For detailed implementation, see:
+
+- **[Fulfillment Engine](/commercebridge/fulfillment-engine)** — Complete fulfillment documentation
+- **[Core Bridge API](/commercebridge/core-bridge)** — Fulfillment operations reference
+
+---
+
+**Fulfillment: Smart allocation across warehouse networks.**

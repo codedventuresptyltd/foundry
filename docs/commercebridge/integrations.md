@@ -4,7 +4,7 @@ title: Custom Ecosystems
 ---
 
 # Custom Ecosystems
-**Concept:** A collection of workers (custom and core) that form a complete operational environment.
+**Concept:** How to use and extend the Bridge.
 
 ## What is an Ecosystem?
 

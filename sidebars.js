@@ -15,7 +15,179 @@
 const sidebars = {
   // Home/Welcome sidebar
   homeSidebar: [
-    'index',
+    {
+      type: 'doc',
+      id: 'index',
+      label: 'Overview',
+    },
+    {
+      type: 'category',
+      label: 'Core Concepts',
+      collapsed: true,
+      items: [
+        {
+          type: 'doc',
+          id: 'core/index',
+          label: 'Overview',
+        },
+        'core/worker-ecosystems',
+        'core/bridge-architecture',
+        'core/engagement-centric-design',
+        'core/engagements',
+        'core/pricing-models',
+        {
+          type: 'doc',
+          id: 'core/caching-strategies',
+          label: 'Datastores',
+        },
+        'core/fulfillment',
+        'core/security',
+        'core/devops-philosophy',
+        'core/models',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Platforms',
+      collapsed: true,
+      items: [
+        {
+          type: 'category',
+          label: 'CommerceBridge',
+          collapsed: true,
+          items: [
+            {
+              type: 'doc',
+              id: 'commercebridge/index',
+              label: 'Overview',
+            },
+            'commercebridge/architecture',
+            {
+              type: 'category',
+              label: 'Core Components',
+              items: [
+                'commercebridge/bridge',
+                'commercebridge/core-bridge',
+                'commercebridge/workers',
+                'commercebridge/pricing-engine',
+                'commercebridge/fulfillment-engine',
+                'commercebridge/integrations',
+              ],
+            },
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Touchpoint',
+          collapsed: true,
+          items: [
+            {
+              type: 'doc',
+              id: 'touchpoint/index',
+              label: 'Overview',
+            },
+            {
+              type: 'category',
+              label: 'Architecture',
+              items: [
+                'touchpoint/slot-based-ui',
+                'touchpoint/commercebridge-integration',
+              ],
+            },
+            {
+              type: 'category',
+              label: 'Guides',
+              items: [
+                'touchpoint/customization',
+                'touchpoint/example-flows',
+              ],
+            },
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Eidos',
+          collapsed: true,
+          items: [
+            {
+              type: 'doc',
+              id: 'eidos/index',
+              label: 'Overview',
+            },
+            {
+              type: 'category',
+              label: 'Concepts',
+              items: [
+                'eidos/product-dna',
+                'eidos/data-schema',
+              ],
+            },
+            {
+              type: 'category',
+              label: 'Implementation',
+              items: [
+                'eidos/rule-sets',
+                'eidos/commercebridge-integration',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Roadmap',
+      collapsed: true,
+      items: [
+        'roadmap/commercebridge',
+        'roadmap/touchpoint',
+        'roadmap/eidos',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Releases',
+      collapsed: true,
+      items: [
+        {
+          type: 'category',
+          label: 'CommerceBridge',
+          collapsed: true,
+          items: [
+            'releases/commercebridge-v1',
+            'releases/commercebridge-v0',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Touchpoint',
+          collapsed: true,
+          items: [
+            'releases/touchpoint-v1',
+            'releases/touchpoint-v0',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Eidos',
+          collapsed: true,
+          items: [
+            'releases/eidos-v1',
+            'releases/eidos-v0',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'link',
+      label: 'Field Notes',
+      href: '/fieldnotes',
+    },
+    {
+      type: 'link',
+      label: 'GitHub',
+      href: 'https://github.com/codedventuresptyltd/public',
+    },
   ],
 
   // CommerceBridge sidebar
@@ -32,13 +204,6 @@ const sidebars = {
         'commercebridge/pricing-engine',
         'commercebridge/fulfillment-engine',
         'commercebridge/integrations', // Custom Ecosystems
-      ],
-    },
-    {
-      type: 'category',
-      label: 'SDK Reference',
-      items: [
-        'commercebridge/sdk-reference',
       ],
     },
   ],
@@ -81,46 +246,6 @@ const sidebars = {
       items: [
         'eidos/rule-sets',
         'eidos/commercebridge-integration',
-      ],
-    },
-  ],
-
-  // Core Concepts sidebar
-  coreSidebar: [
-    'core/index',
-    {
-      type: 'category',
-      label: 'Architecture Patterns',
-      items: [
-        'core/worker-ecosystems',
-        'core/bridge-architecture',
-        'core/engagement-centric-design',
-        'core/engagements',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Commerce Concepts',
-      items: [
-        'core/pricing-models',
-        'core/caching-strategies',
-        'core/fulfillment',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Operations',
-      items: [
-        'core/tenant-isolation',
-        'core/security',
-        'core/devops-philosophy',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Reference',
-      items: [
-        'core/models',
       ],
     },
   ],
