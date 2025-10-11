@@ -4,106 +4,98 @@ title: Eidos
 ---
 
 # Eidos Overview
-**Tagline:** Structured knowledge for configurable products.
 
-## What It Is
-
-Eidos is a system for defining product "DNA" — the genetic code that determines what a product is, how it can be configured, and how it behaves in pricing and fulfillment contexts.
-
-Rather than hardcoding product logic, Eidos uses declarative schemas and rules that can be modified without code deployments. This enables sophisticated product configuration, dynamic validation, and business rule enforcement.
-
-Think of it as a product knowledge base that other systems (pricing, fulfillment, UI) consult to understand how products work.
-
-## Why It Exists
-
-Complex products need more than attributes in a database. Eidos solves:
-
-| Problem | Solution |
-|---------|----------|
-| Hardcoded product logic | Declarative schemas and rules |
-| Invalid configurations possible | Rule-based validation |
-| Code deployment for product changes | Schema updates without code |
-| Inconsistent product behavior | Single source of product truth |
-| Difficult product versioning | Schema versioning and evolution |
-
-## Core Abstractions
-
-| Term | Meaning |
-|------|---------|
-| **Product DNA** | Complete definition of product structure and behavior |
-| **Schema** | Product attribute definitions and types |
-| **Rules** | Validation and business logic constraints |
-| **Configuration** | Valid combination of product options |
-
-## High-Level Flow
-
-```mermaid
-flowchart LR
-    SCHEMA[Product Schema] --> EIDOS[Eidos Engine]
-    RULES[Business Rules] --> EIDOS
-    
-    USER[User Configures] --> UI[Touchpoint]
-    UI --> EIDOS
-    EIDOS --> VALIDATE{Valid?}
-    VALIDATE -->|Yes| PRICING[Pricing Engine]
-    VALIDATE -->|No| ERROR[Show Error]
-    
-    PRICING --> UI
-    ERROR --> UI
-```
-
-## Product DNA Concept
-
-Product DNA defines:
-
-### Attributes
-
-What characteristics define this product:
-```
-Material: [steel, aluminum, composite]
-Finish: [powder-coated, anodized, bare]
-Dimensions: {length, width, height}
-```
-
-### Constraints
-
-What combinations are valid:
-```
-IF material = composite
-THEN finish must be powder-coated
-```
-
-### Behaviors
-
-How configuration affects systems:
-```
-IF material = steel AND finish = powder-coated
-THEN add 3 days to lead time
-```
-
-### Relationships
-
-How product connects to others:
-```
-Product A requires Product B (accessory)
-Product C substitutes for Product D
-```
-
-## Public vs Private
-
-| Public (Documented Here) | Private (Not Exposed) |
-|--------------------------|----------------------|
-| Schema concepts | Actual product schemas |
-| Rule patterns | Specific business rules |
-| Integration approach | Schema storage details |
-| Extension model | Tenant-specific rules |
-
-## Next
-
-- [Product DNA →](/eidos/product-dna) — Defining product genetic code
-- [Data Schema →](/eidos/data-schema) — Schema-driven product modeling
-- [Rule Sets →](/eidos/rule-sets) — Business logic and validation
+**Tagline:** The genetic layer that defines how product meaning and data evolve through distributed systems.
 
 ---
 
-**Eidos: Products that know themselves.**
+## What It Is
+
+Eidos is a conceptual and structural framework for product definition within the Coded Ventures ecosystem. It defines **what a product is**, how it relates to its purpose and usage, and how it evolves through a network of connected repositories — from supplier to store.
+
+Unlike traditional PIM (Product Information Management) systems that simply store product data, Eidos defines the **rules of inheritance, propagation, and variation** that govern how that data flows through an ecosystem.
+
+**Eidos provides:**
+
+- **Conceptual model for meaning** — Purpose, usage, relationships
+- **Structural model for evolution** — Branching and propagation across nodes
+
+---
+
+## The Role of Eidos
+
+Eidos sits above the repository hierarchy. It defines the **genetic pattern** that determines how product data behaves and evolves across connected contexts.
+
+### Example: Product Hierarchy
+
+```
+90×45 Structural Pine Timber (Eidos Definition)
+└── Supplier A (Repository)
+    ├── Distributor A (Repository)
+    │   ├── Region 1 (Repository)
+    │   │   ├── Store 1 (Repository)
+    │   │   └── Store 2 (Repository)
+    │   ├── Region 2 (Repository)
+    │   │   └── Store 3 (Repository)
+    │   └── Region 3 (Repository)
+    │       └── Store 4 (Repository)
+    └── Distributor B (Repository)
+        └── Region 1 (Repository)
+            └── Store 5 (Repository)
+```
+
+**Eidos (top):** Defines the conceptual blueprint — purpose, usage, attributes, relationships, and behavior rules.
+
+**Repositories:** Contextual instances of the Eidos definition (Supplier, Distributor, Region, Store).
+
+**Propagation:** Updates flow downward along the branch; child nodes can override or extend inherited data.
+
+This creates a **living, distributed model of product knowledge** — globally consistent, locally adaptable.
+
+---
+
+## Why It Exists
+
+| Problem | Eidos Solution |
+|---------|----------------|
+| Product data duplication | Centralized definition with controlled downstream flow |
+| Manual maintenance across supply chains | Automated inheritance and propagation |
+| Inconsistent product variants | Repository-level branching with local overrides |
+| No context for usage or purpose | Conceptual layer defining relationships and meaning |
+
+---
+
+## Core Concepts
+
+| Term | Description |
+|------|-------------|
+| **Eidos** | The conceptual definition that captures purpose, usage, structure, and relationships |
+| **Repository** | A node that holds live product data for a specific context |
+| **Propagation** | The automatic flow of updates down the hierarchy |
+| **Override** | Local modification that stops propagation at that node |
+
+---
+
+## Integration Role
+
+Eidos doesn't serve data directly to frontends or users.
+
+Instead, systems like **CommerceBridge** and **Touchpoint** consult Eidos to:
+
+- Resolve which repository version applies to a given context
+- Understand product purpose and relationships
+- Apply configuration or pricing logic consistently across variants
+
+Eidos ensures that all downstream systems share the same conceptual understanding of what each product represents.
+
+---
+
+## Next
+
+- **[What is an Eidos?](/eidos/product-dna)** — The complete product definition
+- **[Repositories](/eidos/repositories)** — How Eidos instances are distributed
+- **[Relationships](/eidos/relationships)** — How purpose and usage link products
+
+---
+
+**Eidos: The genetic code of product knowledge.**

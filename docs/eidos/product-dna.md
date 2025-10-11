@@ -1,152 +1,138 @@
 ---
 sidebar_position: 2
-title: Product DNA
+title: What is an Eidos?
 ---
 
-# Product DNA
-**Concept:** Defining the genetic code of products.
+# What is an Eidos?
+**Concept:** The complete conceptual definition that captures purpose, usage, and structure.
+
+---
 
 ## What It Is
 
-Product DNA is the complete definition of what makes a product:
-- Its attributes and options
-- Valid configurations
-- How it behaves in different contexts
-- How it relates to other products
+An **Eidos** is the genetic blueprint that defines what a product fundamentally is:
 
-## Structure
+- **Purpose** — Why this product exists (structural support, electrical connection, fastening)
+- **Usage** — How this product is used (construction framing, wiring installations, assembly)
+- **Attributes** — Core characteristics (material, dimensions, specifications)
+- **Relationships** — How this product relates to others (complements, alternatives, components)
 
-### Attributes
-
-The characteristics that define the product:
-
-```ts
-interface ProductDNA {
-  attributes: {
-    material: {
-      type: 'enum'
-      values: ['steel', 'aluminum', 'composite']
-      required: true
-    }
-    finish: {
-      type: 'enum'
-      values: ['powder-coated', 'anodized', 'bare']
-      required: false
-    }
-    dimensions: {
-      type: 'object'
-      schema: {
-        length: 'number'
-        width: 'number'
-        height: 'number'
-      }
-    }
-  }
-}
-```
-
-### Constraints
-
-Rules about valid combinations:
-
-```ts
-constraints: [
-  {
-    condition: { material: 'composite' },
-    then: { finish: { in: ['powder-coated'] } },
-    message: 'Composite only supports powder-coated finish'
-  }
-]
-```
-
-### Behaviors
-
-How configuration affects other systems:
-
-```ts
-behaviors: {
-  pricing: [
-    {
-      when: { material: 'composite' },
-      modifier: { type: 'upcharge', value: 1.25 }
-    }
-  ],
-  fulfillment: [
-    {
-      when: { material: 'steel', finish: 'powder-coated' },
-      leadTime: { add: 3, unit: 'days' }
-    }
-  ]
-}
-```
-
-## Use in Systems
-
-### Pricing
-
-Eidos rules affect price calculation:
-
-```ts
-// User configures product
-const config = {
-  material: 'composite',
-  finish: 'powder-coated'
-}
-
-// Eidos provides pricing behavior
-const behavior = eidos.getPricingBehavior(productId, config)
-// Returns: { modifier: 1.25 upcharge }
-
-// Pricing engine applies
-const price = basePrice * 1.25
-```
-
-### Fulfillment
-
-Eidos rules affect lead times:
-
-```ts
-const behavior = eidos.getFulfillmentBehavior(productId, config)
-// Returns: { leadTime: +3 days }
-
-const estimatedShip = today + standardLeadTime + 3
-```
-
-### UI
-
-Eidos drives dynamic forms:
-
-```ts
-// Get schema
-const schema = eidos.getProductSchema(productId)
-
-// Render form fields
-for (const [key, attr] of Object.entries(schema.attributes)) {
-  renderField(key, attr.type, attr.values)
-}
-
-// Validate on change
-const errors = await eidos.validate(productId, configuration)
-```
-
-## Extension Points
-
-Define custom attribute types:
-
-```ts
-// Register custom type
-eidos.registerAttributeType('temperature-range', {
-  validate: (value) => value.min < value.max,
-  display: (value) => `${value.min}-${value.max}°F`
-})
-```
-
-## IP Safety
-
-This describes:
-- **Public:** DNA concept, attribute patterns, behavior model
-- **Private (not shown):** Specific product schemas, actual business rules
+The Eidos is **conceptual**, not operational. It defines the "what" and "why" of a product, independent of inventory, pricing, fulfillment, or transactional data.
 
 ---
 
-**Product DNA: Define once, use everywhere.**
+## Eidos vs Repository Data
+
+**Eidos:**
+- Conceptual definition
+- Purpose and usage
+- Global attributes
+- Relationship patterns
+
+**Repository Data:**
+- Contextual instance
+- Local variations
+- Filtered product options
+- Context-specific attributes
+
+**Example:**
+
+**Eidos:** "90×45 Structural Pine Timber is a construction material used for framing, with standard dimensions and grade specifications."
+
+**Repository (Store 5):** "We offer this in 3.6m and 4.8m lengths (not 6m), standard grade only (not fire-rated), meets AU/NZ building codes."
+
+---
+
+## Purpose and Usage
+
+### Purpose: Why It Exists
+
+Defines the fundamental reason for the product:
+- **Structural timber** → Purpose: Load-bearing construction
+- **Electrical cable** → Purpose: Power transmission
+- **Fastener** → Purpose: Joining materials
+
+### Usage: How It's Applied
+
+Defines the contexts where the product is used:
+- **Structural timber** → Usage: Wall framing, roof trusses, floor joists
+- **Electrical cable** → Usage: Building wiring, industrial installations
+- **Fastener** → Usage: Wood joinery, metal assembly
+
+This contextual information helps systems:
+- Recommend complementary products
+- Validate configurations
+- Apply appropriate pricing rules
+- Guide customers to correct products
+
+---
+
+## Attributes and Structure
+
+DNA defines the **core attributes** that describe the product:
+
+### Fixed Attributes
+Unchanging characteristics:
+- Material type
+- Standard dimensions
+- Grade or specification
+- Regulatory certifications
+
+### Variable Attributes
+Context-dependent characteristics:
+- Available lengths (in different repositories)
+- Color options (in different markets)
+- Packaging variations (bulk vs retail)
+
+---
+
+## Relationships
+
+DNA defines how products relate to each other:
+
+### Complementary Products
+Products used together:
+- Structural timber → Complemented by: Nails, brackets, moisture barrier
+- Electrical cable → Complemented by: Conduit, junction boxes, terminals
+
+### Alternative Products
+Substitutable products:
+- 90×45 Structural Pine → Alternative: 90×45 Treated Pine (outdoor use)
+- Standard cable → Alternative: Armored cable (high-risk environments)
+
+### Component Relationships
+Products that are part of larger assemblies:
+- Door frame → Components: Timber lengths, hinges, screws
+- Electrical panel → Components: Breakers, bus bars, enclosure
+
+---
+
+## How Eidos Propagates
+
+When the Eidos updates, changes flow through the repository hierarchy:
+
+```
+Update Eidos: Add new attribute "Fire Rating"
+  ↓
+Supplier repository inherits change
+  ↓
+Distributor repositories inherit change
+  ↓
+Regional repositories inherit change
+  ↓
+Store repositories inherit change
+```
+
+**Repositories can override** if needed (e.g., Store 3 doesn't sell fire-rated products, so it filters that variation).
+
+---
+
+## Learn More
+
+- **[Repositories](/eidos/repositories)** — How Eidos instances are distributed
+- **[Relationships](/eidos/relationships)** — How purpose and usage connect products
+- **[Eidos Overview](/eidos)** — Complete framework overview
+
+---
+
+**Eidos: The conceptual blueprint of what a product is.**

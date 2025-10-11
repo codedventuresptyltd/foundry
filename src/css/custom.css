@@ -178,6 +178,12 @@ code {
   padding-right: 2rem;
   border-left: 1px solid rgba(122, 133, 153, 0.2);
   border-right: 1px solid rgba(122, 133, 153, 0.2);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.navbar__title:hover {
+  color: #5a6470 !important;
 }
 
 /* Tablet and Mobile: Smaller logo and title on one line */

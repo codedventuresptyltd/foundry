@@ -180,17 +180,19 @@ A **Delivery Zone** represents a geographic area for delivery coverage.
 
 ---
 
-## Search Query
+## Search Config
 
-**Search Query** defines a product search request.
+**Search Config** defines a complete search experience including indexing, algorithm, and interface.
 
 **Core Properties:**
 
-- **Query** — Search text and filters (category, price range, stock status, delivery zone)
-- **Results Control** — Sort order, pagination
-- **Context** — Tenant ID
+- **Indexing Strategy** — Which fields to index, how to process them
+- **Search Algorithm** — Ranking rules, relevance scoring, business logic boosts
+- **Filter Configuration** — Hard filters (must match) and soft filters (preferences)
+- **UI Interface** — Which filters to display, result card data bindings, sort options
+- **Scope** — Product type, category, or use case this config applies to
 
-**Purpose:** Search queries are how Touchpoint and other systems request product catalogs from the datastore/search engine.
+**Purpose:** Search configs allow different search experiences for different product types or categories. One tenant can have multiple search configs, each optimized for specific needs (e.g., industrial supplies vs office products).
 
 ---
 

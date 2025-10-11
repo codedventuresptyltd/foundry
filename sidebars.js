@@ -86,15 +86,9 @@ const sidebars = {
               id: 'touchpoint/index',
               label: 'Overview',
             },
-            {
-              type: 'category',
-              label: 'Architecture',
-              items: [
-                'touchpoint/commercebridge-integration',
-                'touchpoint/slot-based-ui',
-                'touchpoint/search',
-              ],
-            },
+            'touchpoint/commercebridge-integration',
+            'touchpoint/slot-based-ui',
+            'touchpoint/search',
           ],
         },
         {
@@ -107,22 +101,9 @@ const sidebars = {
               id: 'eidos/index',
               label: 'Overview',
             },
-            {
-              type: 'category',
-              label: 'Concepts',
-              items: [
-                'eidos/product-dna',
-                'eidos/data-schema',
-              ],
-            },
-            {
-              type: 'category',
-              label: 'Implementation',
-              items: [
-                'eidos/rule-sets',
-                'eidos/commercebridge-integration',
-              ],
-            },
+            'eidos/product-dna',
+            'eidos/repositories',
+            'eidos/relationships',
           ],
         },
       ],

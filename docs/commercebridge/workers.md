@@ -214,13 +214,6 @@ Workers access all data and functions through the Bridge:
 
 ```ts
 export class MyWorker extends BaseWorker {
-  private bridge: CustomBridge
-  
-  constructor(config: WorkerConfig) {
-    super(config)
-    this.bridge = new CustomBridge(config.bridge)
-  }
-  
   async work(): Promise<void> {
     this.cycleMeta.jobCards = await this.processData(this.cycleMeta.jobCards)
   }
@@ -228,8 +221,7 @@ export class MyWorker extends BaseWorker {
   protected async processData(jobCards: JobModel[]): Promise<JobModel[]> {
     return this.cycleMeta.processJobs(async (jobCard: JobModel) => {
       // All operations go through Bridge
-      const data = await this.bridge.getData(jobCard.data.id)
-      const result = await this.bridge.processData(data)
+      const result = await this.bridge.processData(jobCard.data)
       
       // Store results in jobCard.data
       jobCard.data.result = result
