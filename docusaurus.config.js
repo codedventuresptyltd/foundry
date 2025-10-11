@@ -95,6 +95,8 @@ const config = {
         logo: {
           alt: 'Coded Ventures',
           src: 'CodedVenturesLogo.webp',
+          href: 'https://codedventures.com.au',
+          target: '_blank',
         },
         items: [
           {
