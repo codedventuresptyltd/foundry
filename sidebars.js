@@ -34,6 +34,7 @@ const sidebars = {
         'core/bridge-architecture',
         'core/engagement-centric-design',
         'core/engagements',
+        'core/translators',
         'core/pricing-models',
         {
           type: 'doc',
