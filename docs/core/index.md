@@ -23,6 +23,7 @@ Distributed systems design and abstraction:
 - **[Bridge Architecture](/core/bridge-architecture)** — Central abstraction layer between workers and integrations
 - **[Engagement-Centric Design](/core/engagement-centric-design)** — Modeling commerce as conversations, not transactions
 - **[Engagements](/core/engagements)** — Lifecycle containers for commerce conversations
+- **[Translator Framework](/core/translators)** — Modular translation layer for external data formats
 
 ### Commerce Concepts
 
@@ -106,6 +107,26 @@ Traditional systems model orders as the primary entity. We model **engagements**
 This pattern applies beyond commerce to any multi-step, stateful process.
 
 [Learn about Engagement-Centric Design →](/core/engagement-centric-design)
+
+---
+
+### [Translator Framework](/core/translators)
+
+**Modular translation layer for external data formats**
+
+The Translator Framework provides a standardized way to serialize Engagements into external formats like cXML, UBL, and custom schemas. Built on three components:
+
+- **Config** — Declarative field mappings
+- **Transformer** — Data extraction and normalization logic
+- **Template** — Format output definition
+
+Key principles:
+- Register translators dynamically by format and version
+- Tenant-specific overrides without code changes
+- Clean separation between data, logic, and presentation
+- Type-safe transformations with validation
+
+[Learn about Translator Framework →](/core/translators)
 
 ---
 
