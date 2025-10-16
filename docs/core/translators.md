@@ -60,7 +60,7 @@ The Translator Framework follows a clear flow from input to output:
 The framework is implemented as `TranslatorService`, a **static service class** that provides:
 
 - **Internal Registry:** Map-based translator definitions lookup (O(1))
-- **Template Engine:** Simple placeholder replacement ({{field}}, {{nested.field}})
+- **Template Engine:** Simple placeholder replacement with double-brace syntax
 - **Helper Utilities:** Static methods for formatting, XML sanitization, property access
 - **Bridge Integration:** Exposed as `bridge.translators` for easy access
 
@@ -316,7 +316,7 @@ Each step is isolated and testable, with the transformer handling all business l
 
 **Step 4: Create Template**
 - Define output structure using placeholder syntax
-- Use simple `{{variable}}` or `{{nested.property}}` format
+- Use simple double-brace variable interpolation format
 - Keep logic-free - all data pre-formatted by transformer
 - For complex iterations, implement custom template function
 
