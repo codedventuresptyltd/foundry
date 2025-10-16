@@ -98,11 +98,6 @@ Each modifier is a rule from the pricing snapshot. The engine applies them in or
 Our pricing model can represent:
 - **Volume/Tier Pricing** — Quantity-based breaks
 - **Customer-Specific** — Contract pricing, negotiated rates
-- **Zone-Based** — Geographic pricing, shipping costs
-- **Promotional** — Time-limited discounts
-- **Payment Terms** — Net-30 discounts, early payment incentives
-- **Product Mix** — Bundle pricing, cross-product rules
-- **Custom Rules** — Tenant-defined logic
 
 ---
 
