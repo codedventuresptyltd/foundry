@@ -4,7 +4,7 @@ title: Translator Framework
 ---
 
 # Translator Framework
-**Pattern:** Modular, declarative translation layer for serializing Engagements into external data formats.
+**Pattern:** Static service providing registry-driven translation for serializing Engagements into external data formats.
 
 ---
 
@@ -12,13 +12,13 @@ title: Translator Framework
 
 The **Translator Framework** provides a standardized way to convert internal Engagement data into external data exchange formats like **cXML**, **UBL**, **JSON schemas**, and custom XML formats required by procurement systems, ERPs, and trading partners.
 
-Rather than hardcoding transformation logic for each format, the framework uses three cooperating components:
+Implemented as a static service class (following the pricing module pattern), the framework provides:
 
-1. **Config** — Declarative field mappings (JSON/YAML)
+1. **Config** — Declarative field mappings with MongoDB storage support
 2. **Transformer** — Type-safe data extraction and normalization (TypeScript class)
-3. **Template** — Format output definition (Liquid/Handlebars)
+3. **Template** — Format output definition (simple placeholder replacement)
 
-This separation allows new formats to be added quickly, versioned independently, and customized per tenant without modifying core logic.
+This separation allows new formats to be added quickly, versioned independently, and customized per client with database-stored configs—no code changes required.
 
 ---
 
@@ -39,193 +39,176 @@ Without a framework, you end up with:
 
 **The Solution:**
 The Translator Framework decouples **what data** (config), **how to extract it** (transformer), and **how to format it** (template). This means:
-- New formats are added by creating three files
-- Tenant overrides only touch configs, not code
-- Schema versions coexist (e.g., cXML 1.2.014 and 1.2.038)
+- New formats are registered at startup with simple imports
+- Client overrides stored in MongoDB, not code
+- Schema versions coexist (e.g., cXML 1.2.014 and 1.2.041)
 - Templates stay clean because transformers handle all the logic
+- Static service pattern provides simple, consistent API
 
 ---
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    ENG[Engagement] --> TRANS[Translator]
-    TRANS --> CONFIG[Config]
-    TRANS --> TRANSFORMER[Transformer]
-    TRANS --> TEMPLATE[Template]
-    TRANSFORMER --> OUTPUT[Formatted Output]
-    TEMPLATE --> OUTPUT
-    CONFIG -.maps.-> TRANSFORMER
-```
+The Translator Framework follows a clear flow from input to output:
+
+**Flow:** Engagement → TranslatorService → (Registry + Transformer + Template Engine) → Formatted Output
+
+**Config Layer:** MongoDB provides optional config overrides that modify field mappings without code changes.
+
+### Core Design
+
+The framework is implemented as `TranslatorService`, a **static service class** that provides:
+
+- **Internal Registry:** Map-based translator definitions lookup (O(1))
+- **Template Engine:** Simple placeholder replacement ({{field}}, {{nested.field}})
+- **Helper Utilities:** Static methods for formatting, XML sanitization, property access
+- **Bridge Integration:** Exposed as `bridge.translators` for easy access
 
 ### Components
 
 **1. Config (Mapping)**
-Defines how Engagement fields map to the format's data model.
-
-```json
-{
-  "order.id": "engagement.order.id",
-  "order.total": "engagement.totals.total",
-  "order.currency": "engagement.currency",
-  "shipTo.city": "engagement.shipTo.address.city",
-  "items": "engagement.items"
-}
-```
+Defines how Engagement fields map to the format's data model. Configs include:
+- Version information
+- Field mappings (e.g., `buyerCookie` → `actors[0].attributes.accountId`)
+- Default values (currency, units, country codes)
+- Configs can be stored in MongoDB and override code defaults
 
 **2. Transformer (Logic)**
-TypeScript class that extracts, normalizes, validates, and formats data.
-
-```typescript
-class CXMLTransformer extends BaseTransformer {
-  transform(engagement: Engagement): CXMLData {
-    return {
-      orderId: this.get('order.id'),
-      total: this.formatCurrency(this.get('order.total')),
-      currency: this.get('order.currency'),
-      shipTo: this.extractAddress('shipTo'),
-      items: this.transformItems(this.get('items'))
-    }
-  }
-}
-```
+TypeScript class that extracts, normalizes, validates, and formats data using config mappings. Transformers:
+- Use mapping helpers to resolve paths from config
+- Apply formatting (dates, currency, XML escaping)
+- Handle format-specific business logic
+- Transform nested structures (line items, addresses, etc.)
 
 **3. Template (Format)**
-Liquid or Handlebars template that defines the final serialized output.
+Simple placeholder templates define the final serialized output. Templates:
+- Use double-brace syntax for variable interpolation
+- Support nested property access
+- Focus purely on structure (no logic)
+- For complex loops, transformers can provide custom template functions
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<cXML version="1.2.014">
-  <Request>
-    <OrderRequest>
-      <OrderRequestHeader orderID="{{ orderId }}" orderDate="{{ orderDate }}">
-        <Total>
-          <Money currency="{{ currency }}">{{ total }}</Money>
-        </Total>
-      </OrderRequestHeader>
-    </OrderRequest>
-  </Request>
-</cXML>
-```
+**Note:** For templates requiring iterations, transformers can implement custom template functions until the template engine supports loops natively.
 
 ---
 
 ## How It Works
 
 ### 1. Registration
-Translators are registered in a central factory with a unique identifier:
-
-```typescript
-translators.register('cxml_1_2_014', {
-  config: require('./translators/cxml/1.2.014/config.json'),
-  transformer: CXMLTransformer,
-  template: readFileSync('./translators/cxml/1.2.014/template.xml')
-})
-```
+Translators are registered at startup using simple imports (no file I/O):
+- Format-specific registration functions import all components (transformer, template, config)
+- Registration uses a dot-notation key system (e.g., `cxml.punchout.orderMessage`)
+- Each translator includes transformer instance, template, config, and version
+- The Bridge automatically calls registration functions during startup
+- All translators are available immediately after bridge initialization
 
 ### 2. Translation
-Workers or integrations request a specific translator:
+Access translators through the Bridge's static service:
+- Simple translation: `bridge.translators.run(key, engagement)` returns formatted output
+- With metadata: `runWithMetadata()` includes timing and timestamp information
+- Check availability: `has()` verifies translator registration
+- List available: `list()` returns all registered translator keys
+- Get stats: `getStats()` provides format breakdown and counts
 
-```typescript
-const translator = translators.get('cxml_1_2_014')
-const output = translator.translate(engagement)
-// Returns cXML formatted string
-```
+### 3. Client Config Overrides
+Clients can override configs via MongoDB without modifying code:
 
-### 3. Tenant Overrides
-Tenants can override configs without modifying transformers or templates:
+**Stored Config Structure:**
+- Collection: `translator_configs`
+- Theme: `translator-config`
+- Topic: translator key (e.g., `cxml.punchout.orderMessage`)
+- Name: custom identifier
+- Config object with mappings and defaults
 
-```json
-// tenant-123/cxml_1_2_014/config.json
-{
-  "order.id": "engagement.metadata.customOrderNumber",
-  "order.supplierCode": "engagement.metadata.vendorId"
-}
-```
-
-The framework automatically loads tenant-specific configs if they exist, falling back to defaults.
+**Usage Pattern:**
+- Retrieve config using MongoDB translator module
+- Methods: `translator_getConfig()`, `translator_getConfigByName()`, `translator_listConfigs()`
+- Future: merge custom config with defaults at translation time
+- No code deployment needed for mapping changes
 
 ---
 
-## Schema Versioning
+## Directory Structure
 
-Different versions of the same format coexist as separate translators:
+The actual implementation uses a flattened structure for clarity:
 
-```
-/translators
-  /cxml
-    /1.2.014
-      config.json
-      transformer.ts
-      template.xml
-    /1.2.038
-      config.json
-      transformer.ts
-      template.xml
-  /ubl
-    /2.1
-      config.json
-      transformer.ts
-      template.xml
-    /2.3
-      config.json
-      transformer.ts
-      template.xml
-```
+**Core Files:**
+- `translator.service.ts` - Main static service (all-in-one)
+- `template.engine.ts` - Template rendering engine
+- `types.ts` - Core type definitions
+- `index.ts` - Public exports
+
+**Format Organization:**
+Each format (e.g., cxml) contains translator subdirectories (e.g., punchout_orderMessage) with:
+- `types.ts` - Type extensions via declaration merging
+- `transformer.ts` - Transform logic
+- `template.ts` - Format template
+- `config.ts` - Field mappings and defaults
+
+Format directories include `register.ts` for auto-registration and `index.ts` for exports.
+
+**Design Principles:**
+- ✅ Flattened structure (`punchout_orderMessage` not `punchout/orderMessage`)
+- ✅ Hard imports (no file I/O via readFileSync)
+- ✅ Co-located types (types live with transformers)
+- ✅ Service pattern (static methods, matches `pricing.service.ts`)
+
+### Schema Versioning
+
+Different versions can coexist by using unique translator keys:
+- Version-specific keys: `cxml.punchout.orderMessage.v1_2_014`
+- Default/current version: `cxml.punchout.orderMessage`
+- Future versions: `cxml.punchout.orderMessage.v2`
 
 This allows:
-- Different customers to use different schema versions
-- Safe migration paths (deploy new version, migrate tenants gradually)
+- Different clients to use different schema versions
+- Safe migration paths (deploy new version, migrate clients gradually)
 - Legacy support without technical debt
+- Same format directory, different registrations
 
 ---
 
-## Transformer Responsibilities
+## TranslatorService API
 
-The **Transformer** is where all logic lives. It's responsible for:
+The `TranslatorService` provides a complete static API for translation and utilities.
 
-### Data Extraction
-Using config mappings to pull data from Engagements:
-```typescript
-this.get('order.id') // Uses config to resolve engagement.order.id
-```
+### Core Methods
 
-### Type Enforcement
-Ensuring data matches format requirements:
-```typescript
-validateRequired(['order.id', 'order.total', 'order.currency'])
-validateType('order.total', 'number')
-```
+**Registration:**
+- `register()` - Register new translator with key and definition
+- `get()` - Retrieve translator definition by key
+- `has()` - Check if translator exists
+- `list()` - Get all registered translator keys
+- `getByFormat()` - Filter translators by format prefix
+- `getStats()` - Get total count and format breakdown
 
-### Formatting
-Applying format-specific rules:
-```typescript
-formatCurrency(amount: number): string {
-  return amount.toFixed(2) // cXML requires 2 decimal places
-}
+**Translation:**
+- `run()` - Execute translation, returns formatted output string
+- `runWithMetadata()` - Execute translation with timing/metadata
 
-formatDate(date: Date): string {
-  return date.toISOString() // cXML uses ISO 8601
-}
-```
+### Helper Utilities
 
-### Business Logic
-Handling format-specific requirements:
-```typescript
-// cXML requires different node structures for catalog vs punchout orders
-transformItems(items: Item[]): CXMLItemData[] {
-  return items.map(item => ({
-    lineNumber: item.position,
-    quantity: item.quantity,
-    unitPrice: this.formatCurrency(item.unitPrice),
-    // cXML-specific: include supplier part number
-    supplierPartID: item.sku || item.metadata?.supplierSKU
-  }))
-}
-```
+All transformers have access to these static helper methods:
 
-This keeps templates clean and focused purely on structure, not logic.
+**Formatting:**
+- `formatDate()` - ISO 8601 date formatting
+- `formatMoney()` - Convert cents to currency string with decimals
+- `sanitizeXml()` - Escape XML special characters
+- `formatBoolean()` - Convert boolean to custom string values
+
+**Data Access:**
+- `getProperty()` - Nested property access with fallback defaults
+- `getString()` - Safe string conversion with default
+- `joinArray()` - Array to delimited string
+- `applyMapping()` - Apply config-based field mappings
+
+### Transformer Pattern
+
+Transformers leverage these utilities to:
+- Resolve config-based field mappings
+- Format dates, currency, and special characters
+- Access nested engagement properties safely
+- Apply defaults when data is missing
+- Keep template logic purely structural
 
 ---
 
@@ -233,35 +216,19 @@ This keeps templates clean and focused purely on structure, not logic.
 
 Templates should be **purely presentational**:
 
-**✅ Good:**
-```xml
-<Money currency="{{ currency }}">{{ total }}</Money>
-```
+**Good Practices:**
+- Use simple placeholders for pre-formatted values
+- Let transformers handle all formatting logic
+- Keep templates focused on structure only
+- Use pre-transformed data from the model
 
-**❌ Bad:**
-```xml
-<Money currency="{{ currency }}">{{ total | toFixed: 2 }}</Money>
-```
-*Formatting belongs in the transformer, not the template.*
+**Anti-Patterns to Avoid:**
+- Formatting in templates (decimal places, date formats)
+- Logic or fallbacks in template expressions
+- Direct access to raw engagement data
+- Template-based conditionals or calculations
 
-**✅ Good:**
-```xml
-{{#each items}}
-  <Item lineNumber="{{ lineNumber }}">
-    <Quantity>{{ quantity }}</Quantity>
-  </Item>
-{{/each}}
-```
-
-**❌ Bad:**
-```xml
-{{#each engagement.items}}
-  <Item lineNumber="{{ @index }}">
-    <Quantity>{{ qty || quantity }}</Quantity>
-  </Item>
-{{/each}}
-```
-*Logic and fallbacks belong in the transformer.*
+**Key Principle:** All data manipulation happens in the transformer. Templates only insert pre-formatted strings into the output structure.
 
 ---
 
@@ -313,64 +280,17 @@ Generate **human-readable formats** like PDF-ready HTML or formatted Excel struc
 
 ## Implementation Details
 
-### Directory Structure
-```
-/translators
-  /[format]        # e.g., cxml, ubl, custom
-    /[version]     # e.g., 1.2.014, 2.3
-      config.json
-      transformer.ts
-      template.[xml|json|hbs]
-    index.ts       # Format registry
-  index.ts         # Main factory
-  base.ts          # BaseTransformer class
-```
-
-### Base Transformer
-All transformers extend `BaseTransformer`:
-
-```typescript
-abstract class BaseTransformer {
-  protected config: TranslatorConfig
-  protected engagement: Engagement
-  
-  abstract transform(): any
-  
-  protected get(path: string): any {
-    // Resolve config mapping and extract from engagement
-  }
-  
-  protected validateRequired(fields: string[]): void
-  protected validateType(field: string, type: string): void
-  protected formatCurrency(amount: number): string
-  protected formatDate(date: Date): string
-}
-```
-
 ### Translation Pipeline
-```typescript
-class Translator {
-  constructor(config, transformer, template) {
-    this.config = config
-    this.transformer = transformer
-    this.template = template
-  }
-  
-  translate(engagement: Engagement): string {
-    // 1. Apply config mappings
-    const mappedData = this.applyConfig(engagement)
-    
-    // 2. Run transformer
-    const transformedData = new this.transformer(mappedData).transform()
-    
-    // 3. Validate
-    this.validate(transformedData)
-    
-    // 4. Render template
-    return this.render(this.template, transformedData)
-  }
-}
-```
+
+The translation process follows a clear sequence:
+
+1. **Config Resolution** - Apply field mappings from config (default or database-stored)
+2. **Transformation** - Execute transformer to extract and format data from engagement
+3. **Validation** - Verify required fields and data types (optional)
+4. **Template Rendering** - Insert transformed data into template structure
+5. **Output** - Return formatted string (XML, JSON, EDI, etc.)
+
+Each step is isolated and testable, with the transformer handling all business logic.
 
 ---
 
@@ -378,53 +298,38 @@ class Translator {
 
 ### Adding a New Format
 
-**Step 1: Create Config**
-```json
-// translators/edifact/d96a/config.json
-{
-  "order.id": "engagement.order.id",
-  "order.date": "engagement.order.createdAt",
-  "buyer.code": "engagement.customer.buyerCode"
-}
-```
+**Step 1: Create Directory Structure**
+- Create format directory under `formats/` (e.g., `formats/edifact/`)
+- Create translator-specific subdirectory (e.g., `formats/edifact/orders_d96a/`)
 
-**Step 2: Create Transformer**
-```typescript
-// translators/edifact/d96a/transformer.ts
-export class EDIFACTTransformer extends BaseTransformer {
-  transform(): EDIFACTData {
-    return {
-      messageType: 'ORDERS',
-      orderId: this.get('order.id'),
-      orderDate: this.formatDate(this.get('order.date'), 'YYMMDD'),
-      buyer: this.get('buyer.code')
-    }
-  }
-  
-  formatDate(date: Date, format: string): string {
-    // EDIFACT-specific date formatting
-  }
-}
-```
+**Step 2: Create Config**
+- Define version, field mappings, and default values
+- Map Engagement fields to format-specific fields
+- Export config object for registration
 
-**Step 3: Create Template**
-```
-UNH+{{ messageRef }}+ORDERS:D:96A:UN'
-BGM+220+{{ orderId }}+9'
-DTM+137:{{ orderDate }}:102'
-NAD+BY+++{{ buyer }}'
-UNT+{{ segmentCount }}+{{ messageRef }}'
-```
+**Step 3: Create Transformer**
+- Implement `transform()` method
+- Use `TranslatorService` helper utilities
+- Apply config mappings to extract data
+- Format values according to target format requirements
+- Return transformed model object
 
-**Step 4: Register**
-```typescript
-// translators/edifact/index.ts
-translators.register('edifact_d96a', {
-  config: require('./d96a/config.json'),
-  transformer: EDIFACTTransformer,
-  template: readFileSync('./d96a/template.edi', 'utf8')
-})
-```
+**Step 4: Create Template**
+- Define output structure using placeholder syntax
+- Use simple `{{variable}}` or `{{nested.property}}` format
+- Keep logic-free - all data pre-formatted by transformer
+- For complex iterations, implement custom template function
+
+**Step 5: Register Translator**
+- Create registration function in format's `register.ts`
+- Import all components (config, transformer, template)
+- Call `TranslatorService.register()` with unique key
+- Add registration call to Bridge startup
+
+**Step 6: Type Extension**
+- Extend `TranslatorTypeMap` interface using declaration merging
+- Define input and output types for type safety
+- Co-locate types with transformer code
 
 ---
 
