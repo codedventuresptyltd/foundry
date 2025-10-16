@@ -4,64 +4,25 @@ title: Fulfillment Engine
 ---
 
 # Fulfillment Engine
-Intelligent inventory allocation and delivery orchestration across multiple warehouses.
+Intelligent item availability across multiple warehouses. The purpose of this module is not to manage fulfillment but to answer the question of if this produc tis available. 
 
 ## Responsibilities
 
 ### Inventory Management
 - Track inventory across multiple warehouses
-- Reserve stock for pending orders
-- Release reservations on cancellation
 - Sync with external inventory systems
 
 ### Delivery Zone Management
 - Define geographic delivery boundaries
 - Filter warehouses by deliverable zones
-- Calculate delivery time estimates
+- Estimate delivery time estimates
 - Apply zone-based constraints
 
 ### Availability Checking
 - Real-time inventory availability
 - Multi-warehouse aggregation
 - Zone-filtered results
-- Alternative product suggestions
 
-## Lifecycle
-
-### 1. Availability Check
-Customer views product or adds to cart:
-- Check inventory across warehouses
-- Filter by customer's delivery zone
-- Calculate estimated delivery
-- Return availability status
-
-### 2. Reservation
-Customer initiates checkout:
-- Reserve inventory at selected warehouse(s)
-- Generate reservation ID
-- Set expiration timeout
-- Hold stock temporarily
-
-### 3. Allocation
-Order is confirmed:
-- Convert reservation to allocation
-- Lock inventory for order
-- Generate fulfillment plan
-- Assign to warehouse operations
-
-### 4. Fulfillment
-Order is shipped:
-- Update inventory levels
-- Generate tracking information
-- Calculate actual shipping costs
-- Update engagement status
-
-### 5. Completion
-Order is delivered:
-- Close allocation
-- Update final inventory
-- Archive fulfillment data
-- Calculate metrics
 
 ## Delivery Zones
 
@@ -88,9 +49,6 @@ graph TB
 - Custom drawn regions
 - Multi-state territories
 
-**Postal code lists:**
-- Specific ZIP/postal codes
-- Rural vs urban classifications
 
 ### Zone Properties
 
@@ -121,14 +79,14 @@ Each zone has:
 **Order:** 100 units to rural Montana  
 **Warehouse A:** 200 units, doesn't serve Montana  
 **Warehouse B:** 80 units, serves Montana  
-**Result:** Can fulfill 80 units max, suggest alternatives
+**Result:** Can fulfill 80 units max
 
 ### Scenario 4: Optimization
 
 **Order:** 200 units to Dallas  
 **Warehouse A:** Has stock, 800 miles away, 4 days, $150 shipping  
 **Warehouse B:** Has stock, 200 miles away, 2 days, $75 shipping  
-**Result:** Optimize for Warehouse B (closer, faster, cheaper)
+**Result:** Optimize for Warehouse B
 
 ## Spatial Filtering
 

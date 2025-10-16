@@ -60,7 +60,6 @@ Customer-specific rates:
 - Contract pricing
 - Negotiated rates
 - Account-level discounts
-- Payment term adjustments
 
 ---
 
