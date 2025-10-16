@@ -8,31 +8,9 @@ title: Security
 
 ## Philosophy
 
-Security is implemented at **every layer**, not just authentication:
+Security is implemented at **every layer**, not just authentication. Each request passes through multiple defense layers:
 
-```mermaid
-flowchart TB
-    REQ[Request]
-    
-    subgraph "Defense Layers"
-        L1[API Gateway]
-        L2[Authentication]
-        L3[Authorization]
-        L4[Input Validation]
-        L5[Business Logic]
-        L6[Data Access]
-        L7[Audit Logging]
-    end
-    
-    REQ --> L1
-    L1 --> L2
-    L2 --> L3
-    L3 --> L4
-    L4 --> L5
-    L5 --> L6
-    L6 --> L7
-    L7 --> RESPONSE[Response]
-```
+**Request Flow:** API Gateway → Authentication → Authorization → Input Validation → Business Logic → Data Access → Audit Logging → Response
 
 ## Security Layers
 
@@ -98,91 +76,56 @@ Track everything:
 
 ### Token-Based
 
-```ts
-interface AuthToken {
-  userId: string
-  tenantId: string
-  roles: string[]
-  issuedAt: number
-  expiresAt: number
-}
-```
+Tokens contain essential identity information:
+- User identifier
+- Tenant identifier
+- Assigned roles
+- Issue timestamp
+- Expiration timestamp
 
 ### Validation
 
-```ts
-async validateRequest(req: Request) {
-  const token = extractToken(req)
-  const claims = await verifyToken(token)
-  
-  // Check expiration
-  if (claims.expiresAt < Date.now()) {
-    throw new AuthenticationError('Token expired')
-  }
-  
-  // Check tenant matches
-  if (req.body.tenantId !== claims.tenantId) {
-    throw new AuthorizationError('Tenant mismatch')
-  }
-  
-  return claims
-}
-```
+Token validation process:
+1. Extract token from request
+2. Verify token signature and integrity
+3. Check expiration timestamp
+4. Verify tenant context matches request
+5. Return validated claims for authorization
 
 ## Authorization Pattern
 
 ### Role-Based Access Control
 
-```ts
-interface Permission {
-  resource: string  // 'engagement', 'product', 'customer'
-  action: string    // 'read', 'write', 'delete'
-  tenantId: string
-}
+Permissions define access to resources:
+- **Resource:** Target entity (engagement, product, customer)
+- **Action:** Operation type (read, write, delete)
+- **Tenant:** Scope boundary (tenant isolation)
 
-async checkPermission(userId: string, permission: Permission) {
-  const user = await this.getUser(userId)
-  const roles = await this.getUserRoles(userId)
-  
-  for (const role of roles) {
-    if (role.permissions.includes(permission)) {
-      return true
-    }
-  }
-  
-  return false
-}
-```
+Permission checking process:
+1. Retrieve user identity
+2. Load assigned roles
+3. Check each role for required permission
+4. Grant or deny access based on match
 
 ## Input Validation
 
 ### Schema-Based
 
-```ts
-const engagementSchema = {
-  customerId: { type: 'string', required: true },
-  type: { type: 'enum', values: ['quote', 'order'], required: true },
-  lineItems: { type: 'array', minLength: 1, required: true }
-}
-
-async createEngagement(params: unknown) {
-  // Validate before processing
-  const validated = await validate(params, engagementSchema)
-  return await this.create(validated)
-}
-```
+Schema validation ensures data integrity:
+- Define expected field types and constraints
+- Mark required vs optional fields
+- Specify allowed values for enums
+- Set minimum/maximum lengths for arrays
+- Validate before processing any data
 
 ### Sanitization
 
-```ts
-function sanitizeInput(input: string): string {
-  // Remove potentially dangerous characters
-  return input
-    .trim()
-    .replace(/[<>]/g, '')  // Strip HTML
-    .substring(0, 1000)    // Limit length
-}
-```
+Input sanitization removes dangerous content:
+- Trim whitespace
+- Strip HTML/script tags
+- Enforce length limits
+- Remove injection attack patterns
+- Normalize encoding
 
 ## Data Encryption
 
@@ -210,19 +153,13 @@ function sanitizeInput(input: string): string {
 
 ### Log Structure
 
-```ts
-interface AuditLog {
-  timestamp: Date
-  tenantId: string
-  userId: string
-  action: string
-  resource: string
-  resourceId: string
-  changes?: Record<string, unknown>
-  ipAddress: string
-  userAgent: string
-}
-```
+Audit logs capture complete context:
+- **When:** Timestamp of event
+- **Who:** Tenant and user identifiers
+- **What:** Action and resource type
+- **Where:** Resource identifier
+- **How:** Changes made (before/after)
+- **From:** IP address and user agent
 
 ## Do / Don't
 

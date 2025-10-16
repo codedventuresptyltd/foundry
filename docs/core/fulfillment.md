@@ -60,14 +60,6 @@ Multiple warehouses work together:
 - Allocation optimizes across the network
 - Split shipments when necessary
 
-### Allocation Strategies
-
-Different optimization approaches:
-- **Minimize shipments** — Fulfill from fewest warehouses
-- **Minimize cost** — Choose cheapest warehouse/shipping
-- **Minimize time** — Fastest delivery route
-- **Balance load** — Distribute across warehouses
-
 ---
 
 ## How It Works in Practice
