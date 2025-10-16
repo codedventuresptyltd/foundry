@@ -76,25 +76,6 @@ UI can subscribe to engagement changes and update in real-time as the conversati
 
 ---
 
-## How It Works in Practice
-
-Instead of:
-```ts
-createQuote()   // Creates a quote record
-convertToOrder() // Creates an order record (loses quote context)
-fulfillOrder()   // Creates fulfillment record (loses order context)
-```
-
-You have:
-```ts
-createEngagement({ type: 'order' })
-updateEngagement(id, { pricing: quote })
-updateEngagement(id, { status: 'confirmed' })
-updateEngagement(id, { allocation: fulfillment })
-```
-
-One engagement, one conversation, complete context.
-
 ---
 
 ## Learn More
