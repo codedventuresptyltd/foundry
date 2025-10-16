@@ -15,11 +15,11 @@ Multi-stage price calculation engine with modifiers, volume breaks, and zone-bas
 - Process customer-specific pricing
 - Adjust for delivery zones
 
-### Cache Management
-- Cache calculated prices for performance
-- Invalidate caches on price changes
-- Warm common price calculations
-- Manage cache expiration
+### Snapshot Management
+- Capture pricing state at engagement creation
+- Store complete context for historical accuracy
+- Enable price consistency throughout engagement lifecycle
+- Support audit and compliance requirements
 
 ### Transparency
 - Provide breakdown of all modifiers applied
@@ -40,11 +40,6 @@ Sequential application of modifiers:
 - Customer-specific pricing
 - Delivery zone adjustments
 - Custom tenant modifiers
-
-### 3. Result Caching
-- Generate cache key from context
-- Store result with appropriate TTL
-- Tag for invalidation patterns
 
 ## Calculation Flow
 

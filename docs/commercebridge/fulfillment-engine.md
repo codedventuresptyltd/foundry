@@ -248,25 +248,6 @@ Each zone has:
 **Warehouse B:** Has stock, 200 miles away, 2 days, $75 shipping  
 **Result:** Optimize for Warehouse B (closer, faster, cheaper)
 
-## Optimization Criteria
-
-Allocation algorithm considers:
-
-### 1. Minimize Shipments
-Prefer fulfilling from single warehouse when possible.
-
-### 2. Minimize Distance
-Choose closest warehouse to delivery destination.
-
-### 3. Minimize Cost
-Factor in shipping costs and warehouse preferences.
-
-### 4. Minimize Time
-Meet delivery date requirements.
-
-### 5. Balance Load
-Distribute work across warehouse network.
-
 ## Spatial Filtering
 
 Uses search engine for geographic queries:
@@ -279,73 +260,6 @@ Uses search engine for geographic queries:
 
 **Zone intersection:**
 - Does warehouse's delivery zone include this location?
-
-## Extension Points
-
-### Custom Allocation Logic
-
-```ts
-export class CustomBridge extends BaseBridge {
-  async allocateInventory(engagementId: string, items: LineItem[]) {
-    // Add custom pre-allocation logic
-    const customerPreferences = await this.getCustomerPreferences()
-    
-    // Call base allocation
-    const result = await super.allocateInventory(engagementId, items)
-    
-    // Add custom post-allocation logic
-    if (result.splitShipment && !customerPreferences.allowSplit) {
-      // Re-allocate from single warehouse
-      return await this.allocateFromSingleWarehouse(engagementId, items)
-    }
-    
-    return result
-  }
-}
-```
-
-### Custom Zone Logic
-
-```ts
-export class CustomBridge extends BaseBridge {
-  async checkAvailability(query: AvailabilityQuery) {
-    // Add custom zone filtering
-    const enhancedQuery = {
-      ...query,
-      deliveryZone: await this.resolveDeliveryZone(query.address)
-    }
-    
-    return await super.checkAvailability(enhancedQuery)
-  }
-}
-```
-
-## Do / Don't
-
-### ✅ Do
-
-- Filter products by delivery zone
-- Cache availability results
-- Prefer single-warehouse fulfillment
-- Provide estimated delivery dates
-- Reserve inventory during checkout
-- Release reservations on timeout
-- Support split shipments when necessary
-
-### ❌ Don't
-
-- Show un-deliverable products to customers
-- Allocate without zone validation
-- Hold inventory reservations indefinitely
-- Ignore warehouse capabilities
-- Make allocation decisions without optimization
-- Bypass the fulfillment engine
-
-## IP Safety
-
-This documentation describes:
-- **Public:** Fulfillment concepts, allocation patterns, zone handling
-- **Private (not shown):** Warehouse locations, inventory schemas, allocation algorithms, zone geometries
 
 ---
 
