@@ -20,12 +20,6 @@ Intelligent inventory allocation and delivery orchestration across multiple ware
 - Calculate delivery time estimates
 - Apply zone-based constraints
 
-### Allocation Optimization
-- Determine optimal warehouse(s) for orders
-- Minimize split shipments when possible
-- Balance cost, speed, and availability
-- Respect warehouse capabilities
-
 ### Availability Checking
 - Real-time inventory availability
 - Multi-warehouse aggregation
@@ -200,11 +194,6 @@ graph TB
 - State or province boundaries
 - Custom drawn regions
 - Multi-state territories
-
-**Radius-based:**
-- Distance from warehouse
-- Concentric delivery circles
-- Time-based zones (2-hour, same-day)
 
 **Postal code lists:**
 - Specific ZIP/postal codes
