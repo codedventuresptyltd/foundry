@@ -1,0 +1,9 @@
+# Cloudflare Pages redirects
+# Handle common redirects for the Foundry documentation site
+
+# Redirect old paths if any
+/docs /docs/
+/fieldnotes /fieldnotes/
+
+# Handle trailing slashes
+/* /:splat 200

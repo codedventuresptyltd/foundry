@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://foundry.codedventures.com.au/sitemap.xml
+

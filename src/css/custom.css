@@ -1,0 +1,346 @@
+/**
+ * Coded Ventures Foundry Custom Theme
+ * Forge aesthetic: Dark graphite base with steel/silver highlights
+ * Engineering craftsmanship meets design thinking
+ */
+
+:root {
+  /* Forge Color Palette - Steel Theme */
+  --foundry-graphite: #1a1d23;
+  --foundry-dark-graphite: #13151a;
+  --foundry-light-graphite: #2a2f38;
+  --foundry-steel: #7a8599;
+  --foundry-light-steel: #a5b1c5;
+  --foundry-bright-steel: #c5d1e5;
+  --foundry-steel-blue: #6b7a94;
+  --foundry-dark-steel: #5a6878;
+  --foundry-silver: #b8c5d9;
+  --foundry-metal: #8b9ab0;
+
+  /* Docusaurus overrides */
+  --ifm-color-primary: #7a8599;
+  --ifm-color-primary-dark: #6b7a94;
+  --ifm-color-primary-darker: #5a6878;
+  --ifm-color-primary-darkest: #4a5668;
+  --ifm-color-primary-light: #8b9ab0;
+  --ifm-color-primary-lighter: #a5b1c5;
+  --ifm-color-primary-lightest: #c5d1e5;
+  
+  --ifm-code-font-size: 95%;
+  --ifm-font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --ifm-font-family-monospace: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+
+  /* Background and surfaces */
+  --ifm-background-color: #13151a;
+  --ifm-background-surface-color: #1a1d23;
+  
+  /* Typography */
+  --ifm-heading-color: #f5f6f7;
+  --ifm-font-color-base: #e4e6eb;
+  --ifm-font-color-secondary: #a5b1c5;
+  
+  /* Links */
+  --ifm-link-color: var(--foundry-light-steel);
+  --ifm-link-hover-color: var(--foundry-bright-steel);
+  
+  /* Navbar */
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-navbar-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+  
+  /* Footer */
+  --ifm-footer-background-color: var(--foundry-dark-graphite);
+  
+  /* Code blocks */
+  --ifm-code-background: var(--foundry-light-graphite);
+  
+  /* Sidebar */
+  --ifm-menu-color: var(--foundry-light-steel);
+  --ifm-menu-color-active: var(--foundry-hot-ember);
+  
+  /* Cards and containers */
+  --ifm-card-background-color: var(--foundry-graphite);
+}
+
+/* Dark mode is default, but ensure consistency */
+[data-theme='dark'] {
+  --ifm-background-color: #13151a;
+  --ifm-background-surface-color: #1a1d23;
+}
+
+/* Light mode adjustments (if user toggles) */
+[data-theme='light'] {
+  --ifm-background-color: #f8f9fa;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-font-color-base: #2a2f38;
+  --ifm-heading-color: #1a1d23;
+  --ifm-link-color: #5a6878;
+  --ifm-link-hover-color: #7a8599;
+}
+
+.navbar__title {
+    padding-top:3px;
+}
+
+/* Custom styling for hero sections */
+.hero {
+  background: linear-gradient(135deg, var(--foundry-dark-graphite) 0%, var(--foundry-graphite) 100%);
+  border-bottom: 2px solid var(--foundry-steel);
+}
+
+.hero__title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--foundry-bright-steel) 0%, var(--foundry-light-steel) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero__subtitle {
+  color: var(--foundry-light-steel);
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+/* Custom card styling */
+.card {
+  background: var(--foundry-graphite);
+  border: 1px solid var(--foundry-light-graphite);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--foundry-steel);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(122, 133, 153, 0.15);
+}
+
+/* Code block enhancements */
+.prism-code {
+  background: var(--foundry-light-graphite) !important;
+  border: 1px solid rgba(122, 133, 153, 0.1);
+  border-radius: 6px;
+}
+
+/* Inline code */
+code {
+  background: var(--foundry-light-graphite);
+  color: var(--foundry-bright-steel);
+  border: 1px solid rgba(122, 133, 153, 0.2);
+  border-radius: 3px;
+  padding: 0.15rem 0.4rem;
+}
+
+/* Sidebar customization */
+.menu__link {
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.menu__link:hover {
+  background: rgba(122, 133, 153, 0.1);
+  color: var(--foundry-bright-steel);
+}
+
+.menu__link--active {
+  background: rgba(122, 133, 153, 0.15);
+  color: var(--foundry-bright-steel);
+  border-left: 3px solid var(--foundry-steel);
+}
+
+/* Navbar enhancements */
+.navbar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+}
+
+.navbar__logo {
+  height: 2rem;
+  margin-right: 0.5rem;
+}
+
+.navbar__logo img {
+  height: 2rem;
+  width: auto;
+}
+
+.navbar__title {
+  font-weight: 300;
+  font-size: 1.5rem;
+  color: #7a8599 !important;
+  letter-spacing: 0.5px;
+  margin-left: 2rem;
+  padding-left: 2rem;
+  margin-right: 2rem;
+  padding-right: 2rem;
+  border-left: 1px solid rgba(122, 133, 153, 0.2);
+  border-right: 1px solid rgba(122, 133, 153, 0.2);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.navbar__title:hover {
+  color: #5a6470 !important;
+}
+
+/* Tablet and Mobile: Smaller logo and title on one line */
+@media (max-width: 1440px) {
+  .navbar__logo {
+    height: 1.5rem;
+    margin-right: 0.5rem;
+  }
+  
+  .navbar__logo img {
+    height: 1.5rem;
+  }
+  
+  .navbar__title {
+    font-size: 1.1rem;
+    margin-left: 0.5rem;
+    padding-left: 0.5rem;
+    margin-right: 0.75rem;
+    padding-right: 0.75rem;
+    letter-spacing: 0.5px;
+    border-left: 1px solid rgba(122, 133, 153, 0.15);
+    border-right: 1px solid rgba(122, 133, 153, 0.15);
+  }
+}
+
+/* Very small mobile: Even more compact */
+@media (max-width: 576px) {
+  .navbar__logo {
+    height: 1.2rem;
+    margin-right: 0.3rem;
+  }
+  
+  .navbar__logo img {
+    height: 1.2rem;
+  }
+  
+  .navbar__title {
+    font-size: 0.85rem;
+    margin-left: 0.3rem;
+    padding-left: 0.3rem;
+    margin-right: 0.4rem;
+    padding-right: 0.4rem;
+  }
+}
+
+.navbar__item {
+  transition: color 0.2s ease;
+  color: #2a2f38 !important;
+}
+
+.navbar__item:hover {
+  color: #7a8599 !important;
+}
+
+.navbar__link {
+  color: #2a2f38 !important;
+}
+
+.navbar__link:hover {
+  color: #7a8599 !important;
+}
+
+.navbar__link--active {
+  color: #7a8599 !important;
+  font-weight: 600;
+}
+
+/* Forge-themed accents */
+.forge-accent {
+  border-left: 4px solid var(--foundry-steel);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+}
+
+/* Blockquotes */
+blockquote {
+  border-left: 4px solid var(--foundry-steel);
+  background: rgba(122, 133, 153, 0.05);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 4px;
+}
+
+/* Tables */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--foundry-light-graphite);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+thead tr {
+  background: var(--foundry-light-graphite);
+}
+
+th {
+  color: var(--foundry-bright-steel);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+/* Admonitions */
+.admonition {
+  border-left: 4px solid var(--foundry-steel);
+  background: rgba(122, 133, 153, 0.05);
+  border-radius: 4px;
+}
+
+.admonition-heading {
+  color: var(--foundry-bright-steel);
+}
+
+/* Search bar */
+.DocSearch-Button {
+  background: var(--foundry-light-graphite);
+  border: 1px solid rgba(122, 133, 153, 0.2);
+  border-radius: 6px;
+}
+
+.DocSearch-Button:hover {
+  border-color: var(--foundry-steel);
+  box-shadow: 0 2px 8px rgba(122, 133, 153, 0.15);
+}
+
+/* Footer styling */
+.footer {
+  border-top: 1px solid rgba(122, 133, 153, 0.1);
+  background: var(--foundry-dark-graphite);
+}
+
+.footer__title {
+  color: var(--foundry-bright-steel);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom utility classes */
+.forge-glow {
+  text-shadow: 0 0 10px rgba(122, 133, 153, 0.5);
+}
+
+.forge-border {
+  border: 1px solid var(--foundry-steel);
+  border-radius: 4px;
+}
+
+.forge-gradient {
+  background: linear-gradient(135deg, var(--foundry-light-steel) 0%, var(--foundry-steel) 100%);
+}
+
