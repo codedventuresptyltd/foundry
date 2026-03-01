@@ -37,7 +37,6 @@ Domain-specific patterns for B2B commerce:
 
 Running and scaling distributed systems:
 
-- **[Security](/core/security)** — Defense-in-depth security approach
 - **[DevOps Philosophy](/core/devops-philosophy)** — "Starve old workers, evolve ecosystems"
 
 ### Reference

@@ -29,5 +29,3 @@ const item = await bridge.getExample(id)
 ## Extension Points
 How developers can extend this safely.
 
-## IP Safety
-Avoid including schemas, credentials, or integration payloads.

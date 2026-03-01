@@ -28,11 +28,6 @@ flowchart LR
   D --> B --> A
 ```
 
-## Public vs Private
-| Public | Private |
-|--------|----------|
-| Concepts, safe models, pseudo-SDK functions | Schemas, infra details, tenant-specific logic |
-
 ## Next
 - [Bridge →](/commercebridge/bridge)
 - [Engagement →](/commercebridge/engagement)

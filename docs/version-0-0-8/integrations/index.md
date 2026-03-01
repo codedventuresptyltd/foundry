@@ -42,8 +42,8 @@ All integrations are **swappable** - the system doesn't care if you use Kafka or
 
 | Integration | Purpose |
 |-------------|---------|
-| [Medusa](./medusa.md) | Headless commerce platform integration |
-| [Strapi](./strapi.md) | CMS and content management |
+| Medusa | Headless commerce platform integration (Coming soon) |
+| Strapi | CMS and content management (Coming soon) |
 
 ### Communication
 
@@ -62,8 +62,8 @@ All integrations are **swappable** - the system doesn't care if you use Kafka or
 
 | Integration | Purpose |
 |-------------|---------|
-| [Google Secret Manager](./google-secret-manager.md) | Secure credential storage |
-| [Crypto](./crypto.md) | Hashing, signing, magic links |
+| Google Secret Manager | Secure credential storage (Coming soon) |
+| Crypto | Hashing, signing, magic links (Coming soon) |
 
 ## Module Types
 

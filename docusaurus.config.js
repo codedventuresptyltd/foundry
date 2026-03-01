@@ -34,18 +34,44 @@ const config = {
     locales: ['en'],
   },
 
+  // Dynamically add docs plugins for each version folder
+  plugins: (function() {
+    const fs = require('fs');
+    const path = require('path');
+    const docsPath = path.join(__dirname, 'docs');
+    
+    // Get all version folders
+    const versions = fs.existsSync(docsPath) 
+      ? fs.readdirSync(docsPath, { withFileTypes: true })
+          .filter(dirent => dirent.isDirectory() && dirent.name.startsWith('version-'))
+          .map(dirent => dirent.name)
+      : [];
+    
+    // Create a docs plugin instance for each version
+    // version-current serves at root (/), other versions at /docs/version-X-X-X/
+    const versionPlugins = versions.map(version => {
+      const isCurrent = version === 'version-current';
+      return [
+        '@docusaurus/plugin-content-docs',
+        {
+          id: isCurrent ? 'default' : version, // Use 'default' ID for version-current to avoid conflicts
+          path: `docs/${version}`,
+          routeBasePath: isCurrent ? '/' : `docs/${version}`,
+          sidebarPath: require.resolve('./sidebars.js'),
+          editUrl: 'https://github.com/codedventuresptyltd/foundry/tree/main/',
+        },
+      ];
+    });
+    
+    return versionPlugins;
+  })(),
+
   presets: [
     [
       'classic',
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
-        docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
-          routeBasePath: '/',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/codedventuresptyltd/foundry/tree/main/',
-        },
+        docs: false, // Disable default docs plugin - we use version-specific plugins
         blog: {
           path: 'fieldnotes',
           routeBasePath: 'fieldnotes',
@@ -103,6 +129,11 @@ const config = {
             to: '/',
             position: 'left',
             label: 'Home',
+          },
+          {
+            to: '/versions',
+            position: 'left',
+            label: 'Versions',
           },
           {
             to: '/commercebridge',
