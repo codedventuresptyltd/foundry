@@ -71,7 +71,7 @@ const sidebars = {
                 'commercebridge/workers',
                 'commercebridge/pricing-engine',
                 'commercebridge/fulfillment-engine',
-                'commercebridge/integrations',
+                'commercebridge/ecosystems',
               ],
             },
           ],

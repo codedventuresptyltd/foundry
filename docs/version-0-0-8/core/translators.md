@@ -340,7 +340,7 @@ For implementation details and integration guidance, see:
 - **[Engagements](/core/engagements)** — The data model being translated
 - **[Bridge Architecture](/core/bridge-architecture)** — Where translators are invoked
 - **[Workers](/commercebridge/workers)** — How workers use translators for output
-- **[Integrations](/commercebridge/integrations)** — Connecting translators to external systems
+- **[Integrations](/commercebridge/ecosystems)** — Connecting translators to external systems
 
 ---
 

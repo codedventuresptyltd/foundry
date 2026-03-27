@@ -99,7 +99,7 @@ The magic of worker ecosystems is **gradual evolution**:
 For detailed implementation guidance, see:
 
 - **[Workers](/commercebridge/workers)** — Complete worker documentation
-- **[Custom Ecosystems](/commercebridge/integrations)** — Building your ecosystem
+- **[Custom Ecosystems](/commercebridge/ecosystems)** — Building your ecosystem
 - **[CommerceBridge Architecture](/commercebridge/architecture)** — Full system design
 
 ---

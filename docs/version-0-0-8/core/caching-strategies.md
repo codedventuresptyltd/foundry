@@ -125,7 +125,7 @@ External system events trigger datastore updates.
 For detailed implementation, see:
 
 - **[CommerceBridge Architecture](/commercebridge/architecture)** — Data layer design
-- **[Custom Ecosystems](/commercebridge/integrations)** — Datastore configuration
+- **[Custom Ecosystems](/commercebridge/ecosystems)** — Datastore configuration
 
 ---
 

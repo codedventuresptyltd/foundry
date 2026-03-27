@@ -135,7 +135,7 @@ For detailed implementation, see:
 
 - **[Workers](/commercebridge/workers)** — Worker lifecycle and management
 - **[Worker Ecosystems](/core/worker-ecosystems)** — Distributed processing patterns
-- **[Custom Ecosystems](/commercebridge/integrations)** — Building and deploying ecosystems
+- **[Custom Ecosystems](/commercebridge/ecosystems)** — Building and deploying ecosystems
 
 ---
 

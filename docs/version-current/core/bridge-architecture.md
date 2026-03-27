@@ -81,7 +81,7 @@ For detailed implementation guidance, see:
 
 - **[The Bridge](/commercebridge/bridge)** — Detailed responsibilities and interfaces
 - **[Core Bridge API](/commercebridge/core-bridge)** — Complete function reference
-- **[Custom Ecosystems](/commercebridge/integrations)** — How to extend the Bridge
+- **[Custom Ecosystems](/commercebridge/ecosystems)** — How to extend the Bridge
 - **[CommerceBridge Architecture](/commercebridge/architecture)** — Complete system architecture
 
 ---

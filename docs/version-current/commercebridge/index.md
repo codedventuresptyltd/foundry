@@ -158,7 +158,7 @@ Your custom ecosystem combines:
 
 This approach keeps the core framework clean and upgradeable while giving you complete flexibility to build exactly what your business needs. Workers access both core Bridge functions (engagement management, pricing, fulfillment) and your custom Bridge functions (ERP sync, custom pricing rules, specialized workflows) through a single unified interface.
 
-[Learn how to build Custom Ecosystems →](/commercebridge/integrations)
+[Learn how to build Custom Ecosystems →](/commercebridge/ecosystems)
 
 ## Next
 
