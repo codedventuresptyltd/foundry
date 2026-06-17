@@ -29,22 +29,6 @@ Distributes jobs to workers with exactly-once semantics.
 - Batch operations
 - Scheduled tasks
 
-### Flight Recorder Module
-Internal decision and audit streams for the Flight Recorder viewer.
-
-**Topics:**
-- `flight-recorder-audit` — outcome proof (job completions, tenant audit compatibility)
-- `flight-recorder-events` — decision detail (pricing rules, bridge calls)
-
-**Operations:**
-- Publish from CommerceBridge emitters (workers, pricing engine)
-- Viewer pulls a user-selected time window from Kafka into in-memory storage
-- CRON archiver appends to a JSONL deep archive (separate from the viewer)
-
-**Use Cases:**
-- Internal diagnosis of pricing and workflow decisions
-- Production audit proof without coupling to CommerceBridge Mongo
-
 ### Logs Module
 Centralized structured logging with high throughput.
 
@@ -92,13 +76,10 @@ Event-driven notification system.
 ### Connection Settings
 
 ```typescript
-REDPANDA_BROKERS=localhost:9092
 KAFKA_BROKERS=localhost:9092
 KAFKA_CLIENT_ID=commercebridge-prod
 KAFKA_GROUP_ID=worker-group-1
 KAFKA_ENABLE_SSL=false
-FLIGHT_RECORDER_ARCHIVE_PATH=/data/flight-recorder
-FLIGHT_RECORDER_ARCHIVER_LOOKBACK_MS=3600000
 ```
 
 ### Topic Configuration
@@ -107,8 +88,6 @@ FLIGHT_RECORDER_ARCHIVER_LOOKBACK_MS=3600000
 KAFKA_QUEUE_TOPIC=worker-queue
 KAFKA_LOGS_TOPIC=system-logs
 KAFKA_NOTIFICATIONS_TOPIC=notifications
-FLIGHT_RECORDER_TOPIC_AUDIT=flight-recorder-audit
-FLIGHT_RECORDER_TOPIC_EVENTS=flight-recorder-events
 ```
 
 ### Performance Tuning

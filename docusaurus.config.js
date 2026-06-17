@@ -14,7 +14,8 @@ const config = {
   // Set the production url of your site here
   url: 'https://foundry.codedventures.com.au',
   // Set the /<baseUrl>/ pathname under which your site is served
-  baseUrl: '/',
+  // Embed in Version API: DOCUSAURUS_BASE_URL=/docs/foundry/ npm run build
+  baseUrl: process.env.DOCUSAURUS_BASE_URL || '/',
 
   // GitHub pages deployment config.
   organizationName: 'codedventuresptyltd',

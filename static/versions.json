@@ -10,6 +10,16 @@
     "label": "0.0.8"
   },
   {
+    "id": "version-0-0-0",
+    "path": "/docs/version-0-0-0",
+    "label": "0.0.0"
+  },
+  {
+    "id": "version-0-0-0-test",
+    "path": "/docs/version-0-0-0-test",
+    "label": "0.0.0.test"
+  },
+  {
     "id": "version-current",
     "path": "/docs/version-current",
     "label": "current"
